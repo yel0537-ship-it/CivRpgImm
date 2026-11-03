@@ -20,10 +20,13 @@ namespace Immortal.Core.Action
             float danger = 1f;
             if (poiId != null) { var poi = s.Poi(poiId); if (poi != null && s.Content.RegionById.TryGetValue(poi.RegionId ?? "", out var reg)) danger = reg.danger; }
             float hpMul = 0.8f + danger * 0.2f;
+            // Дикий мир крепнет вместе с державой: в поздних эпохах разбойники в бронзе, а сущности злее.
+            float eraMul = team == Teams.Wild ? 1f + 0.35f * s.Content.EraOrder(s.PlayerEra) : 1f;
+            hpMul *= eraMul;
             var u = new Unit
             {
                 Kind = kind, DefId = defId, Name = d.name, Team = team, Pos = s.Map.NearestWalkable(pos, 4), Home = pos,
-                Radius = d.radius * d.scale, Speed = d.speed, Hp = d.hp * hpMul, MaxHp = d.hp * hpMul, Damage = d.damage * (0.85f + danger * 0.15f),
+                Radius = d.radius * d.scale, Speed = d.speed, Hp = d.hp * hpMul, MaxHp = d.hp * hpMul, Damage = d.damage * (0.85f + danger * 0.15f) * (1f + (eraMul - 1f) * 0.8f),
                 Armor = d.armor, AttackRange = d.attackRange, AggroRange = d.aggroRange, Windup = d.windup, Recover = d.recover,
                 Behavior = d.behavior, PoiId = poiId, Ai = AiState.Idle, Boss = d.boss,
                 Ability = d.ability, AbilityCd = d.abilityCooldown * 0.5f

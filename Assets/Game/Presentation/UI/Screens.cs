@@ -40,6 +40,8 @@ namespace Immortal.Presentation.UI
         public string RulerCityId;
         public string InteriorText;
         public bool WorkshopMode;
+        /// <summary>Вызывается при смене масштаба интерфейса в настройках.</summary>
+        public static Action UiScaleChanged;
         Texture2D _mapTex;
 
         public Screens(IGameShell g)
@@ -118,6 +120,13 @@ namespace Immortal.Presentation.UI
             b.Add(Ui.Label("Один бессмертный. Тысячи лет. Мир, который растёт у вас на глазах.", 16, Ui.Dim));
             b.Add(new VisualElement { style = { height = 12 } });
             if (_g.Session != null && !_g.Session.State.GameOver) b.Add(Ui.Button("Продолжить", () => _g.SetScreen(Screen.World)));
+            var nameRow = Ui.Row();
+            nameRow.Add(Ui.Label("Имя героя: ", 16));
+            var field = new TextField { value = GameSettings.HeroName };
+            field.style.width = 260; field.style.fontSize = 16;
+            field.RegisterValueChangedCallback(ev => GameSettings.HeroName = ev.newValue);
+            nameRow.Add(field);
+            b.Add(nameRow);
             b.Add(Ui.Button("Новая игра", () => _g.NewGame()));
             foreach (var slot in new[] { "auto", "1", "2", "3" })
             {
@@ -705,6 +714,7 @@ namespace Immortal.Presentation.UI
             Volume("Общая громкость", () => GameSettings.Master, v => GameSettings.Master = v);
             Volume("Музыка", () => GameSettings.Music, v => GameSettings.Music = v);
             Volume("Эффекты", () => GameSettings.Sfx, v => GameSettings.Sfx = v);
+            Volume("Размер интерфейса", () => GameSettings.UiScale, v => { GameSettings.UiScale = v; UiScaleChanged?.Invoke(); });
             Toggle("Числа урона", () => GameSettings.DamageNumbers, v => GameSettings.DamageNumbers = v);
             Toggle("Тряска камеры", () => GameSettings.CameraShake, v => GameSettings.CameraShake = v);
             Toggle("Звуки-заглушки, если нет файлов", () => GameSettings.SynthAudio, v => GameSettings.SynthAudio = v);

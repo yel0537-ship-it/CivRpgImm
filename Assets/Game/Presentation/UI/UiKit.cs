@@ -38,6 +38,7 @@ namespace Immortal.Presentation.UI
         public static PanelSettings CreatePanelSettings()
         {
             var ps = Resources.Load<PanelSettings>("UI/GamePanelSettings");
+            if (ps != null) ps = UnityEngine.Object.Instantiate(ps); // копия: не портим ассет в редакторе
             if (ps == null)
             {
                 ps = ScriptableObject.CreateInstance<PanelSettings>();

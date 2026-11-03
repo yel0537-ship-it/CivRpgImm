@@ -58,9 +58,10 @@ namespace Immortal.Core
             TerritorySystem.Recompute(this);
         }
 
-        public static GameSession NewGame(ContentDatabase db, int seed, IRandom rng = null)
+        public static GameSession NewGame(ContentDatabase db, int seed, IRandom rng = null, string heroName = null)
         {
             var state = new GameState { Seed = seed, RngState = (ulong)(uint)seed * 2654435761UL + 1442695040888963407UL };
+            if (!string.IsNullOrWhiteSpace(heroName)) state.Hero.Name = heroName.Trim();
             var s = new GameSession(db, state, rng);
             WorldSetup.Populate(s);
             s.SyncRng();

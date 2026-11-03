@@ -115,6 +115,8 @@ namespace Immortal.Presentation
             go.transform.SetParent(transform, false);
             _doc = go.AddComponent<UIDocument>();
             _doc.panelSettings = Ui.CreatePanelSettings();
+            _doc.panelSettings.scale = GameSettings.UiScale;
+            Screens.UiScaleChanged = () => _doc.panelSettings.scale = GameSettings.UiScale;
             go.SetActive(true);
             var root = _doc.rootVisualElement;
             root.pickingMode = PickingMode.Ignore;
@@ -142,7 +144,10 @@ namespace Immortal.Presentation
             _screens.Show(s);
         }
 
-        public void NewGame() => StartSession(GameSession.NewGame(Content, Environment.TickCount & 0xFFFFF));
+        public void NewGame()
+        {
+            StartSession(GameSession.NewGame(Content, Environment.TickCount & 0xFFFFF, null, GameSettings.HeroName));
+        }
 
         public void StartSession(GameSession s)
         {

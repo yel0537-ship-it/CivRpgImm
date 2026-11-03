@@ -36,6 +36,8 @@ namespace Immortal.Presentation
         public static bool DamageNumbers { get => PlayerPrefs.GetInt("imm.dmg", 1) == 1; set => PlayerPrefs.SetInt("imm.dmg", value ? 1 : 0); }
         public static bool CameraShake { get => PlayerPrefs.GetInt("imm.shake", 1) == 1; set => PlayerPrefs.SetInt("imm.shake", value ? 1 : 0); }
         public static bool SynthAudio { get => PlayerPrefs.GetInt("imm.synth", 1) == 1; set => PlayerPrefs.SetInt("imm.synth", value ? 1 : 0); }
+        public static float UiScale { get => PlayerPrefs.GetFloat("imm.uiscale", 1f); set => PlayerPrefs.SetFloat("imm.uiscale", Mathf.Clamp(value, 0.7f, 1.6f)); }
+        public static string HeroName { get => PlayerPrefs.GetString("imm.heroname", "Изгой"); set => PlayerPrefs.SetString("imm.heroname", string.IsNullOrWhiteSpace(value) ? "Изгой" : value.Trim()); }
     }
 
     /// <summary>

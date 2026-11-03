@@ -24,6 +24,9 @@ namespace Immortal.Presentation
         readonly Dictionary<string, GameObject> _zones = new Dictionary<string, GameObject>();
         readonly Dictionary<string, GameObject> _armies = new Dictionary<string, GameObject>();
         readonly List<GameObject> _banners = new List<GameObject>();
+        sealed class Patrol { public GameObject Go; public ProceduralAnimator Anim; public int From, To; public float T; public Vector3 Last; }
+        readonly List<Patrol> _patrols = new List<Patrol>();
+        readonly List<Vector3> _bannerPos = new List<Vector3>();
         int _bannerCell = -1, _bannerUsed;
         int _revision = -1, _fogRevision = -1;
         float _rebuildCooldown;
@@ -60,6 +63,8 @@ namespace Immortal.Presentation
             _citySig.Clear();
             foreach (var b in _banners) Object.Destroy(b);
             _banners.Clear();
+            foreach (var p in _patrols) Object.Destroy(p.Go);
+            _patrols.Clear();
         }
 
         // ---------- Высоты ----------
@@ -144,6 +149,50 @@ namespace Immortal.Presentation
             SyncZones(heroPos);
             SyncArmies(heroPos);
             SyncBanners(heroPos);
+            SyncPatrols(dt);
+        }
+
+        /// <summary>Дозоры: пара стражей ходит между ближайшими знамёнами границы (только визуально).</summary>
+        void SyncPatrols(float dt)
+        {
+            int want = Mathf.Min(3, _bannerPos.Count / 3);
+            while (_patrols.Count > want) { Object.Destroy(_patrols[_patrols.Count - 1].Go); _patrols.RemoveAt(_patrols.Count - 1); }
+            while (_patrols.Count < want)
+            {
+                int from = _patrols.Count * 3 % Mathf.Max(1, _bannerPos.Count);
+                var go = new GameObject("patrol");
+                go.transform.SetParent(_root, false);
+                Color col = new Color(0.55f, 0.55f, 0.6f);
+                var own = TerritorySystem.OwnerAt(_s, Look.ToCore(_bannerPos[from]));
+                if (own != null) col = Look.Hex(own.Color);
+                var ve = VisualCatalog.Resolve("unit", "patrol", "soldier");
+                ProceduralAnimator anim;
+                if (ve != null) { Object.Instantiate(ve.Prefab, go.transform); anim = go.AddComponent<ProceduralAnimator>(); anim.Init(go.transform.GetChild(0), false); }
+                else
+                {
+                    var body = ViewFactory.BuildHumanoid(go.transform, col, 1f, new Unit { Kind = UnitKind.Soldier }, out var hand);
+                    Look.Prim(PrimitiveType.Cylinder, hand, new Color(0.45f, 0.35f, 0.25f), new Vector3(0, 0.4f, 0), new Vector3(0.05f, 0.9f, 0.05f));
+                    anim = go.AddComponent<ProceduralAnimator>(); anim.Init(body, false);
+                }
+                go.transform.position = _bannerPos[from];
+                _patrols.Add(new Patrol { Go = go, Anim = anim, From = from, To = (from + 1) % _bannerPos.Count, Last = _bannerPos[from] });
+            }
+            foreach (var p in _patrols)
+            {
+                if (_bannerPos.Count < 2) break;
+                p.From %= _bannerPos.Count; p.To %= _bannerPos.Count;
+                var a = _bannerPos[p.From]; var b = _bannerPos[p.To];
+                float len = Mathf.Max(1f, Vector3.Distance(a, b));
+                p.T += dt * 1.6f / len;
+                if (p.T >= 1f) { p.T = 0; p.From = p.To; p.To = (p.To + 1) % _bannerPos.Count; continue; }
+                var pos = Vector3.Lerp(a, b, p.T);
+                pos.y = GroundHeight(Look.ToCore(pos));
+                var dir = b - a; dir.y = 0;
+                p.Go.transform.position = pos;
+                if (dir.sqrMagnitude > 0.01f) p.Go.transform.rotation = Quaternion.LookRotation(dir);
+                float speed = dt > 0 ? Vector3.Distance(pos, p.Last) / dt : 0; p.Last = pos;
+                p.Anim.Tick(new UnitAnimState { Speed = speed }, dt);
+            }
         }
 
         Chunk NewChunk()
@@ -471,6 +520,7 @@ namespace Immortal.Presentation
             if (hc == _bannerCell && Time.frameCount % 120 != 0) return;
             _bannerCell = hc;
             _bannerUsed = 0;
+            _bannerPos.Clear();
             int hx = (int)(hero.x / cellW), hy = (int)(hero.y / cellW);
             for (int y = hy - 4; y <= hy + 4; y++)
             for (int x = hx - 4; x <= hx + 4; x++)
@@ -496,6 +546,7 @@ namespace Immortal.Presentation
                 _bannerUsed++;
                 b.SetActive(true);
                 b.transform.position = Ground(pos);
+                _bannerPos.Add(b.transform.position + new Vector3(1.2f, 0, 1.2f));
                 Look.SetColor(b.transform.Find("flag").GetComponent<Renderer>(), Look.Hex(nation.Color));
             }
             for (int i = _bannerUsed; i < _banners.Count; i++) _banners[i].SetActive(false);

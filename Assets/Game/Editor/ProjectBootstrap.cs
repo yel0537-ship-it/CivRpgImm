@@ -28,6 +28,41 @@ namespace Immortal.EditorTools
             };
         }
 
+        /// <summary>
+        /// Создаёт Assets/Scenes/Boot.unity с камерой и GameRoot.
+        /// Если открыта безымянная сцена (свежий проект), Unity не даёт добавить сцену к ней,
+        /// поэтому Boot создаётся вместо неё (с предложением сохранить изменения, если они есть).
+        /// Если открыта сохранённая сцена — Boot создаётся рядом и закрывается, работа пользователя не трогается.
+        /// </summary>
+        static bool CreateBootScene()
+        {
+            var active = SceneManager.GetActiveScene();
+            bool untitled = string.IsNullOrEmpty(active.path);
+            if (untitled && active.isDirty && !Application.isBatchMode && !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                Debug.LogWarning("Immortal: создание сцены Boot отменено. Запустите Immortal → Bootstrap Project позже.");
+                return false;
+            }
+
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, untitled ? NewSceneMode.Single : NewSceneMode.Additive);
+            var cam = new GameObject("Main Camera") { tag = "MainCamera" };
+            cam.AddComponent<Camera>();
+            var root = new GameObject("GameRoot");
+            root.AddComponent<GameRoot>();
+            if (!untitled)
+            {
+                SceneManager.MoveGameObjectToScene(cam, scene);
+                SceneManager.MoveGameObjectToScene(root, scene);
+            }
+            if (!EditorSceneManager.SaveScene(scene, ScenePath))
+            {
+                Debug.LogError("Immortal: не удалось сохранить " + ScenePath);
+                return false;
+            }
+            if (!untitled) EditorSceneManager.CloseScene(scene, true);
+            return true;
+        }
+
         [MenuItem("Immortal/Bootstrap Project")]
         public static void Run()
         {
@@ -36,21 +71,7 @@ namespace Immortal.EditorTools
             Directory.CreateDirectory("Assets/Settings");
 
             // 1. Сцена Boot.
-            if (!File.Exists(ScenePath))
-            {
-                // Создаём сцену рядом с открытой, не трогая несохранённую работу пользователя.
-                var active = SceneManager.GetActiveScene();
-                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Additive);
-                var cam = new GameObject("Main Camera") { tag = "MainCamera" };
-                cam.AddComponent<Camera>();
-                SceneManager.MoveGameObjectToScene(cam, scene);
-                var root = new GameObject("GameRoot");
-                root.AddComponent<GameRoot>();
-                SceneManager.MoveGameObjectToScene(root, scene);
-                EditorSceneManager.SaveScene(scene, ScenePath);
-                EditorSceneManager.CloseScene(scene, true);
-                if (string.IsNullOrEmpty(active.path) && !active.isDirty) EditorSceneManager.OpenScene(ScenePath);
-            }
+            if (!File.Exists(ScenePath) && !CreateBootScene()) return;
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
 
             // 2. PanelSettings (тема по умолчанию, если в проекте есть).

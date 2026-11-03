@@ -19,9 +19,10 @@ namespace Immortal.Tests
         public void AllOutcomesAreReachable(float roll, RecruitOutcome expected)
         {
             var s = TestUtil.NewGame(11);
-            var npc = Valley(s, "rec_tor");
+            var npc = Valley(s, "rec_gorn"); // недоверчивый: шанс в середине шкалы, достижимы все четыре полосы
             s.State.Hero.Add("berries", 10);
             float chance = RecruitmentSystem.Chance(s, npc, "gift");
+            Assert.That(chance, Is.InRange(0.2f, 0.8f));
             // Подбираем бросок относительно реального шанса, чтобы попасть в нужную полосу исходов.
             float r = expected switch
             {

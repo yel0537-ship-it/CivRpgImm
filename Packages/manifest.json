@@ -16,7 +16,6 @@
     "com.unity.modules.imageconversion": "1.0.0",
     "com.unity.modules.particlesystem": "1.0.0",
     "com.unity.modules.terrain": "1.0.0",
-    "com.unity.modules.textrendering": "1.0.0",
     "com.unity.modules.unitywebrequest": "1.0.0"
   }
 }

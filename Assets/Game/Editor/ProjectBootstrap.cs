@@ -18,13 +18,15 @@ namespace Immortal.EditorTools
     public static class ProjectBootstrap
     {
         public const string ScenePath = "Assets/Scenes/Boot.unity";
+        const string Marker = "Library/ImmortalBootstrap_v2.txt";
 
         static ProjectBootstrap()
         {
             EditorApplication.delayCall += () =>
             {
                 if (Application.isBatchMode || EditorApplication.isPlayingOrWillChangePlaymode) return;
-                if (!File.Exists(ScenePath)) Run();
+                // Повторяем настройку при первом открытии на машине и после обновления версии бутстрапа.
+                if (!File.Exists(ScenePath) || !File.Exists(Marker)) Run();
             };
         }
 
@@ -74,21 +76,31 @@ namespace Immortal.EditorTools
             if (!File.Exists(ScenePath) && !CreateBootScene()) return;
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
 
-            // 2. PanelSettings (тема по умолчанию, если в проекте есть).
+            // 2. PanelSettings и тема UI Toolkit (стандартные визуалы кнопок, прокрутки, полей).
             const string psPath = "Assets/Resources/UI/GamePanelSettings.asset";
-            if (AssetDatabase.LoadAssetAtPath<PanelSettings>(psPath) == null)
+            const string themePath = "Assets/Resources/UI/ImmortalTheme.tss";
+            ThemeStyleSheet theme = null;
+            foreach (var guid in AssetDatabase.FindAssets("t:ThemeStyleSheet"))
             {
-                var ps = ScriptableObject.CreateInstance<PanelSettings>();
+                theme = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(AssetDatabase.GUIDToAssetPath(guid));
+                if (theme != null) break;
+            }
+            if (theme == null)
+            {
+                File.WriteAllText(themePath, "@import url(\"unity-theme://default\");\n");
+                AssetDatabase.ImportAsset(themePath, ImportAssetOptions.ForceSynchronousImport);
+                theme = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(themePath);
+            }
+            var ps = AssetDatabase.LoadAssetAtPath<PanelSettings>(psPath);
+            if (ps == null)
+            {
+                ps = ScriptableObject.CreateInstance<PanelSettings>();
                 ps.scaleMode = PanelScaleMode.ScaleWithScreenSize;
                 ps.referenceResolution = new Vector2Int(1920, 1080);
                 ps.match = 0.5f;
-                foreach (var guid in AssetDatabase.FindAssets("t:ThemeStyleSheet"))
-                {
-                    ps.themeStyleSheet = AssetDatabase.LoadAssetAtPath<ThemeStyleSheet>(AssetDatabase.GUIDToAssetPath(guid));
-                    if (ps.themeStyleSheet != null) break;
-                }
                 AssetDatabase.CreateAsset(ps, psPath);
             }
+            if (ps.themeStyleSheet == null && theme != null) { ps.themeStyleSheet = theme; EditorUtility.SetDirty(ps); }
 
             // 3. URP-конвейер, если проект открыт без шаблона Universal 3D.
 #if IMMORTAL_URP
@@ -119,6 +131,7 @@ namespace Immortal.EditorTools
             PlayerSettings.companyName = "Immortal Team";
             PlayerSettings.runInBackground = true;
             AssetDatabase.SaveAssets();
+            try { File.WriteAllText(Marker, "ok"); } catch { }
             Debug.Log("Immortal: проект подготовлен. Откройте Assets/Scenes/Boot.unity и нажмите Play.");
         }
     }

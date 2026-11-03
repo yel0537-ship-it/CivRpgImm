@@ -61,8 +61,12 @@ namespace Immortal.Presentation
             switch (u.Kind)
             {
                 case UnitKind.Hero: return Look.HeroColor;
-                case UnitKind.Companion: return Look.CompanionColor;
-                case UnitKind.Npc: return u.Team == Teams.Wild ? Look.HostileNpcColor : u.CompanionId != null ? Color.Lerp(Look.CompanionColor, Color.white, 0.4f) : Look.NpcColor;
+                case UnitKind.Companion:
+                case UnitKind.Npc:
+                    if (u.Team == Teams.Wild) return Look.HostileNpcColor;
+                    int face = FaceOf(u);
+                    if (face > 0) { Look.Face(face, out var cloth, out _); return cloth; }
+                    return u.Kind == UnitKind.Companion ? Look.CompanionColor : Look.NpcColor;
                 case UnitKind.Leader:
                 case UnitKind.Soldier:
                     var n = _s.NationByTeam(u.Team) ?? (u.Team == Teams.Player ? _s.PlayerNation : null);
@@ -71,6 +75,14 @@ namespace Immortal.Presentation
             }
             if (u.DefId != null && _s.Content.Enemies.TryGetValue(u.DefId, out var d)) return Look.Hex(d.color, Color.red);
             return Color.gray;
+        }
+
+        int FaceOf(Unit u)
+        {
+            var c = _s.Companion(u.CompanionId);
+            if (c != null) return c.FaceId;
+            var n = _s.Npc(u.NpcId);
+            return n?.FaceId ?? 0;
         }
 
         /// <summary>Плоский сектор (угол 100°) для индикатора замаха — показывает, куда придётся удар.</summary>

@@ -102,6 +102,24 @@ namespace Immortal.Presentation
         public static Vector3 ToWorld(Vec2 p, float y) => new Vector3(p.x, y, p.y);
         public static Vec2 ToCore(Vector3 p) => new Vec2(p.x, p.z);
 
+        static readonly Color[] Cloth =
+        {
+            new Color(0.62f, 0.45f, 0.3f), new Color(0.48f, 0.55f, 0.35f), new Color(0.55f, 0.3f, 0.28f), new Color(0.35f, 0.42f, 0.55f),
+            new Color(0.6f, 0.55f, 0.42f), new Color(0.42f, 0.32f, 0.45f), new Color(0.7f, 0.62f, 0.5f), new Color(0.3f, 0.38f, 0.32f)
+        };
+        static readonly Color[] Skins =
+        {
+            new Color(0.92f, 0.76f, 0.62f), new Color(0.85f, 0.66f, 0.52f), new Color(0.72f, 0.54f, 0.4f), new Color(0.58f, 0.42f, 0.3f), new Color(0.95f, 0.82f, 0.7f)
+        };
+
+        /// <summary>Внешность по FaceId: одинаковый FaceId — одинаковое лицо и одежда (намёк на симуляцию у потомков).</summary>
+        public static void Face(int faceId, out Color cloth, out Color skin)
+        {
+            uint h = MathUtil.Hash(faceId, 7, 13);
+            cloth = Cloth[h % (uint)Cloth.Length];
+            skin = Skins[(h >> 8) % (uint)Skins.Length];
+        }
+
         public static readonly Color HeroColor = new Color(0.95f, 0.78f, 0.25f);
         public static readonly Color CompanionColor = new Color(0.45f, 0.75f, 1f);
         public static readonly Color NpcColor = new Color(0.92f, 0.9f, 0.82f);

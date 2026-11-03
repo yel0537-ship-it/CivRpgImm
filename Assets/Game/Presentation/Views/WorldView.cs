@@ -412,6 +412,19 @@ namespace Immortal.Presentation
                     puff.localScale = Vector3.one * (3f + (k % 3));
                     Look.SetColor(puff.GetComponent<Renderer>(), new Color(0.5f, 0.42f, 0.62f, inside ? 0.12f : 0.3f));
                 }
+                var g = go.transform.Find("glitch");
+                if (g != null)
+                {
+                    bool near = Vec2.Distance(z.Pos, hero) < z.Radius + 6f;
+                    g.gameObject.SetActive(near);
+                    if (near)
+                    {
+                        float step = Mathf.Floor(Time.time / 2.3f);
+                        g.localPosition = new Vector3((step % 3 - 1) * 1.5f, 2.6f + Mathf.Sin(Time.time) * 0.2f, 0);
+                        g.localRotation = Quaternion.Euler(0, step * 30f, 0);
+                        for (int gi = 0; gi < g.childCount; gi++) g.GetChild(gi).localRotation = Quaternion.Euler(Time.time * 40f, Time.time * 40f, 0);
+                    }
+                }
                 // Изнутри дым прозрачнее — видно лишь на несколько шагов.
                 Look.SetColor(o.GetComponent<Renderer>(), new Color(0.42f, 0.33f, 0.55f, inside ? 0.18f : 0.6f));
             }

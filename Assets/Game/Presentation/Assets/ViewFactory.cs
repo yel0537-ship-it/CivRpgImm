@@ -93,7 +93,10 @@ namespace Immortal.Presentation
 
             // Примитив: «кукла» из туловища, головы и конечностей на шарнирах (их качает ProceduralAnimator).
             bool quadruped = u.Kind == UnitKind.Animal || (u.DefId != null && (u.DefId.StartsWith("wolf") || u.DefId == "bear" || u.DefId == "shade_beast" || u.DefId == "boar"));
-            Transform body = quadruped ? BuildQuadruped(rig.Root.transform, color, scale) : BuildHumanoid(rig.Root.transform, color, scale, u, out rig.Hand);
+            int face = s.Companion(u.CompanionId)?.FaceId ?? s.Npc(u.NpcId)?.FaceId ?? 0;
+            Color? skin = null;
+            if (face > 0) { Look.Face(face, out _, out var sk); skin = sk; }
+            Transform body = quadruped ? BuildQuadruped(rig.Root.transform, color, scale) : BuildHumanoid(rig.Root.transform, color, scale, u, out rig.Hand, skin);
             rig.Height = (quadruped ? 1.25f : 1.95f) * scale;
             if (u.Kind == UnitKind.Spirit)
                 foreach (var r in body.GetComponentsInChildren<Renderer>()) Look.SetColor(r, color, 0.5f);
@@ -119,12 +122,12 @@ namespace Immortal.Presentation
             return t;
         }
 
-        public static Transform BuildHumanoid(Transform root, Color color, float s, Unit u, out Transform hand)
+        public static Transform BuildHumanoid(Transform root, Color color, float s, Unit u, out Transform hand, Color? skin = null)
         {
             var body = Pivot(root, "body", new Vector3(0, 0.95f * s, 0));
             body.localScale = Vector3.one * s;
             bool spirit = u.Kind == UnitKind.Spirit;
-            var head = spirit ? color * 1.2f : Skin;
+            var head = spirit ? color * 1.2f : skin ?? Skin;
             Look.Prim(PrimitiveType.Capsule, body, color, new Vector3(0, 0.36f, 0), new Vector3(0.55f, 0.42f, 0.38f), false, "torso");
             Look.Prim(PrimitiveType.Sphere, body, head, new Vector3(0, 0.98f, 0), Vector3.one * 0.36f, false, "head");
             Look.Prim(PrimitiveType.Cube, body, color * 0.55f, new Vector3(0, 0.98f, 0.16f), new Vector3(0.22f, 0.07f, 0.08f), false, "eyes");
@@ -132,6 +135,8 @@ namespace Immortal.Presentation
                 Look.Prim(PrimitiveType.Cube, body, new Color(1f, 0.85f, 0.2f), new Vector3(0, 1.2f, 0), new Vector3(0.34f, 0.1f, 0.34f), false, "crown");
             if (u.Kind == UnitKind.Hero)
                 Look.Prim(PrimitiveType.Cube, body, color * 0.7f, new Vector3(0, 0.38f, -0.2f), new Vector3(0.5f, 0.75f, 0.05f), false, "cape");
+            if (u.Kind == UnitKind.Companion || (u.Kind == UnitKind.Npc && u.CompanionId != null))
+                Look.Prim(PrimitiveType.Cube, body, Look.CompanionColor, new Vector3(0, 0.45f, 0), new Vector3(0.58f, 0.1f, 0.42f), false, "sash").transform.localRotation = Quaternion.Euler(0, 0, 35);
             var limb = color * 0.85f;
             foreach (var side in new[] { -1, 1 })
             {
@@ -520,6 +525,14 @@ namespace Immortal.Presentation
             var outer = Look.Prim(PrimitiveType.Cylinder, go.transform, new Color(0.42f, 0.33f, 0.55f, 0.55f), Vector3.zero, Vector3.one, true, "outer");
             Look.Prim(PrimitiveType.Cylinder, go.transform, new Color(0.3f, 0.25f, 0.4f, 0.35f), Vector3.zero, Vector3.one, true, "inner");
             for (int i = 0; i < 10; i++) Look.Prim(PrimitiveType.Sphere, go.transform, new Color(0.5f, 0.42f, 0.62f, 0.35f), Vector3.zero, Vector3.one, true, "puff" + i);
+            // «Сбой»: одинаковые кубы правильной сеткой, которые иногда перескакивают на шаг.
+            var glitch = new GameObject("glitch").transform;
+            glitch.SetParent(go.transform, false);
+            for (int i = 0; i < 9; i++)
+            {
+                var c = Look.Prim(PrimitiveType.Cube, glitch, new Color(0.75f, 0.9f, 1f), new Vector3((i % 3 - 1) * 3f, 0, (i / 3 - 1) * 3f), Vector3.one * 0.6f, false, "g" + i);
+                Look.SetColor(c.GetComponent<Renderer>(), new Color(0.7f, 0.85f, 1f), 0.9f);
+            }
             var r = outer.GetComponent<Renderer>(); var mpb = new MaterialPropertyBlock(); r.GetPropertyBlock(mpb); mpb.SetFloat(Look.PulseId, 1f); r.SetPropertyBlock(mpb);
             return go;
         }

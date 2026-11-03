@@ -46,7 +46,7 @@
   "fullMargin": 0.15,
   "critBase": 0.93,
   "critPressure": 0.08,
-  "giftBonus": 0.25,
+  "giftBonus": 0.3,
   "needMatchBonus": 0.15,
   "helpBonus": 0.4,
   "repFactor": 0.003,
@@ -56,7 +56,7 @@
   "helpEnergy": 5,
   "pressureEnergy": 15,
   "giftAmount": 5,
-  "failCooldownMonths": 2,
+  "failCooldownMonths": 1,
   "partialRelation": -10,
   "fullRelation": 30,
   "namedCompanionLimit": 12

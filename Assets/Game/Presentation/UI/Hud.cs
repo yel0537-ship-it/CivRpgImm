@@ -173,6 +173,37 @@ namespace Immortal.Presentation.UI
             _floating.Add(new FloatText { L = l, World = world, T = 0 });
         }
 
+        VisualElement _fade; Label _fadeText; float _fadeT, _fadeLife;
+
+        /// <summary>Затемнение экрана с надписью (прыжок во времени, долгий сон).</summary>
+        public void Fade(VisualElement root, string text, float seconds = 2.2f)
+        {
+            if (_fade == null)
+            {
+                _fade = new VisualElement { pickingMode = PickingMode.Ignore };
+                Ui.Absolute(_fade, 0, 0, 0, 0);
+                _fade.style.backgroundColor = Color.black;
+                _fade.style.alignItems = Align.Center; _fade.style.justifyContent = Justify.Center;
+                _fadeText = Ui.Label("", 34, Ui.Gold, true);
+                _fadeText.pickingMode = PickingMode.Ignore;
+                _fade.Add(_fadeText);
+            }
+            if (_fade.parent != root) root.Add(_fade);
+            _fade.BringToFront();
+            _fadeText.text = text;
+            _fadeT = 0; _fadeLife = seconds;
+            Ui.Show(_fade, true);
+        }
+
+        public void UpdateFade(float dt)
+        {
+            if (_fade == null || _fadeLife <= 0) return;
+            _fadeT += dt;
+            float k = _fadeT / _fadeLife;
+            _fade.style.opacity = k < 0.25f ? 1f : Mathf.Clamp01(1f - (k - 0.25f) / 0.75f);
+            if (k >= 1f) { _fadeLife = 0; Ui.Show(_fade, false); }
+        }
+
         sealed class BubbleText { public Label L; public Transform Anchor; public float T, Life; }
         readonly List<BubbleText> _bubbles = new List<BubbleText>();
 

@@ -41,6 +41,7 @@ namespace Immortal.Presentation
         public AudioService Audio => _audio;
         /// <summary>Ускорение времени ×5 вне боя (T).</summary>
         public bool FastForward;
+        float _hitStop;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void AutoCreate()
@@ -212,6 +213,7 @@ namespace Immortal.Presentation
                 HandleWorldInput(dt);
                 if (FastForward && Session.State.Hero.CombatTimer > 0) { FastForward = false; _hud.Notice("Бой — обычный ход времени", 2f); }
                 int speed = FastForward ? 5 : 1;
+                if (_hitStop > 0) { _hitStop -= dt; dt = 0; }
                 _acc += dt * speed;
                 int guard = 0;
                 while (_acc >= Session.Dt && guard++ < 8 * speed)
@@ -246,6 +248,7 @@ namespace Immortal.Presentation
             _ambience.Update(heroPos, heroWorld, dt);
             UpdateLabels(heroPos);
             _hud.Update(Session, _doc.rootVisualElement.panel, _cam.Cam, dt);
+            _hud.UpdateFade(Time.unscaledDeltaTime);
         }
 
         /// <summary>Времена года видны в мире: зимой холоднее и светлее, осенью — рыжее.</summary>
@@ -401,12 +404,13 @@ namespace Immortal.Presentation
                         bool ours = tu != null && tu.Team == Teams.Player;
                         Sfx(tu != null && tu.DefId != null ? "hit_" + tu.DefId : "hit", e.Pos, 1f, ours ? "hit_hero" : "hit");
                         if (tu != null && tu.Kind == UnitKind.Hero) _cam.Shake(Mathf.Clamp(e.Value / 40f, 0.1f, 0.6f));
-                        else if (e.Crit) _cam.Shake(0.15f);
+                        else if (e.Crit) { _cam.Shake(0.15f); _hitStop = Mathf.Max(_hitStop, 0.05f); }
                         if (hp.HasValue && GameSettings.DamageNumbers) _hud.Floating(hp.Value, $"{e.Value:0}", e.Crit ? new Color(1f, 0.85f, 0.2f) : tu != null && tu.Team == Teams.Player ? new Color(1f, 0.35f, 0.3f) : Color.white, e.Crit ? 24 : 18);
                         break;
                     case GameEventType.Death:
                         _units.Burst("death", _world.Ground(e.Pos, 0.8f), 1f, new Color(0.9f, 0.9f, 0.9f));
                         var du = Session.FindUnit(e.UnitId);
+                        if (du != null && (du.Boss || du.Kind == UnitKind.Leader)) { _hitStop = 0.12f; _cam.Shake(0.5f); }
                         Sfx(du != null && du.DefId != null ? "death_" + du.DefId : "death", e.Pos, 1f, "death");
                         break;
                     case GameEventType.Pickup:
@@ -443,6 +447,9 @@ namespace Immortal.Presentation
                     case GameEventType.StageChanged: _hud.Notice($"Поселение выросло: {e.Text}", 5f); _audio.Play("objective"); break;
                     case GameEventType.TimeJumped:
                         _audio.Play("timejump");
+                        if (e.Text == "travel") _hud.Fade(_doc.rootVisualElement, "В пути…", 1.2f);
+                        else if (e.Text == "defeat") _hud.Fade(_doc.rootVisualElement, $"Прошло {e.Value:0} лет сна…", 2.8f);
+                        else _hud.Fade(_doc.rootVisualElement, $"Прошло {e.Value:0} лет…", 2.4f);
                         _world.Bind(Session); _units.Bind(Session); _markers.Bind(Session); _ambience.Bind(Session);
                         if (Session.HeroUnit != null) _cam.Snap(_world.Ground(Session.HeroUnit.Pos));
                         break;

@@ -39,6 +39,8 @@ namespace Immortal.Presentation
         float _musicTimer, _stepDist;
         Vector3 _lastHeroWorld;
         public AudioService Audio => _audio;
+        /// <summary>Ускорение времени ×5 вне боя (T).</summary>
+        public bool FastForward;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void AutoCreate()
@@ -200,16 +202,18 @@ namespace Immortal.Presentation
             if (Current == UiScreen.World)
             {
                 HandleWorldInput(dt);
-                _acc += dt;
+                if (FastForward && Session.State.Hero.CombatTimer > 0) { FastForward = false; _hud.Notice("Бой — обычный ход времени", 2f); }
+                int speed = FastForward ? 5 : 1;
+                _acc += dt * speed;
                 int guard = 0;
-                while (_acc >= Session.Dt && guard++ < 8)
+                while (_acc >= Session.Dt && guard++ < 8 * speed)
                 {
                     Session.Tick();
                     _acc -= Session.Dt;
                     ProcessEvents();
                     if (Current != UiScreen.World || Session == null) break;
                 }
-                if (_acc > Session.Dt * 8) _acc = 0;
+                if (_acc > Session.Dt * 8 * speed) _acc = 0;
                 _autosaveTimer += dt;
                 if (_autosaveTimer > 180f && Session.State.Hero.CombatTimer <= 0) { _autosaveTimer = 0; SaveSystem.Save(Session, "auto"); }
             }
@@ -285,13 +289,19 @@ namespace Immortal.Presentation
             Toggle(GameInput.Key.Tab, UiScreen.Ruler);
             Toggle(GameInput.Key.I, UiScreen.Inventory);
             Toggle(GameInput.Key.C, UiScreen.Craft);
+            Toggle(GameInput.Key.J, UiScreen.Journal);
+            if (Current == UiScreen.World && GameInput.Down(GameInput.Key.T))
+            {
+                FastForward = !FastForward;
+                _hud.Notice(FastForward ? "Время ускорено ×5 (T — обычный ход)" : "Обычный ход времени", 2f);
+            }
         }
 
         void Toggle(GameInput.Key key, UiScreen screen)
         {
             if (!GameInput.Down(key)) return;
             if (Current == screen) SetScreen(UiScreen.World);
-            else if (Current == UiScreen.World || Current == UiScreen.Map || Current == UiScreen.Ruler || Current == UiScreen.Inventory || Current == UiScreen.Craft) SetScreen(screen);
+            else if (Current == UiScreen.World || Current == UiScreen.Map || Current == UiScreen.Ruler || Current == UiScreen.Inventory || Current == UiScreen.Craft || Current == UiScreen.Journal) SetScreen(screen);
         }
 
         // ---------- Ввод в мире ----------
@@ -432,6 +442,11 @@ namespace Immortal.Presentation
                     case GameEventType.Rejuvenated: _audio.Play("essence"); _units.Burst("rejuvenate", _world.Ground(Session.HeroUnit.Pos, 1f), 2.5f, Ui.Mystic, 0.8f); break;
                     case GameEventType.Strike: _units.OnStrike(e.UnitId, false); Sfx(e.Id == "ranged" ? "shoot" : "strike", e.Pos, 0.8f); break;
                     case GameEventType.WindupStarted: Sfx("windup", e.Pos, 0.5f); break;
+                    case GameEventType.Aggro:
+                        var ap = _units.UnitWorldPos(e.UnitId, 0.5f);
+                        if (ap.HasValue) _hud.Floating(ap.Value, "!", new Color(1f, 0.3f, 0.2f), 30);
+                        Sfx("aggro", e.Pos, 0.6f, "windup");
+                        break;
                     case GameEventType.Recruited: _audio.Play("recruit"); break;
                     case GameEventType.BuildingBuilt: if (Session.HeroUnit != null && Vec2.Distance(e.Pos, Session.HeroUnit.Pos) < 60f) Sfx("build", e.Pos); break;
                     case GameEventType.Crafted: _audio.Play("build"); break;
@@ -520,7 +535,12 @@ namespace Immortal.Presentation
 
         public static void Save(GameSession s, string slot)
         {
-            try { File.WriteAllText(PathFor(slot), SaveLoad.Serialize(s)); }
+            try
+            {
+                File.WriteAllText(PathFor(slot), SaveLoad.Serialize(s));
+                var h = s.State.Hero;
+                File.WriteAllText(PathFor(slot) + ".meta", $"{s.Year} г., {Core.Character.HeroSystem.RoleName(h.Role)}, глава {s.State.Chapter}");
+            }
             catch (Exception e) { Debug.LogError("Не удалось сохранить: " + e.Message); }
         }
 
@@ -535,7 +555,9 @@ namespace Immortal.Presentation
         public static string Info(string slot)
         {
             var p = PathFor(slot);
-            return File.Exists(p) ? $"({File.GetLastWriteTime(p):dd.MM HH:mm})" : null;
+            if (!File.Exists(p)) return null;
+            string meta = File.Exists(p + ".meta") ? File.ReadAllText(p + ".meta") + " · " : "";
+            return $"({meta}{File.GetLastWriteTime(p):dd.MM HH:mm})";
         }
     }
 }

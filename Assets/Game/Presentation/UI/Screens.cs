@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 
 namespace Immortal.Presentation.UI
 {
-    public enum Screen { Menu, World, Map, Ruler, Dialogue, Chronicle, End, Inventory, Craft, Interior, Settings }
+    public enum Screen { Menu, World, Map, Ruler, Dialogue, Chronicle, End, Inventory, Craft, Interior, Settings, Journal }
 
     /// <summary>То, что экраны просят у корня игры.</summary>
     public interface IGameShell
@@ -34,7 +34,7 @@ namespace Immortal.Presentation.UI
         readonly IGameShell _g;
         public readonly VisualElement Root;
         readonly Dictionary<Screen, VisualElement> _layers = new Dictionary<Screen, VisualElement>();
-        readonly VisualElement _dialogueBox, _menuBox, _endBox, _chronicleBox, _mapBox, _rulerBox, _invBox, _craftBox, _interiorBox, _settingsBox;
+        readonly VisualElement _dialogueBox, _menuBox, _endBox, _chronicleBox, _mapBox, _rulerBox, _invBox, _craftBox, _interiorBox, _settingsBox, _journalBox;
         string _dialogueKey;
         public string RulerTab = "city";
         public string RulerCityId;
@@ -58,6 +58,7 @@ namespace Immortal.Presentation.UI
             _craftBox = Layer(Screen.Craft, new Color(0, 0, 0, 0.55f));
             _interiorBox = Layer(Screen.Interior, new Color(0, 0, 0, 0.55f));
             _settingsBox = Layer(Screen.Settings, new Color(0.03f, 0.03f, 0.05f, 0.96f));
+            _journalBox = Layer(Screen.Journal, new Color(0, 0, 0, 0.6f));
         }
 
         VisualElement Layer(Screen s, Color bg)
@@ -87,6 +88,7 @@ namespace Immortal.Presentation.UI
                 case Screen.Craft: BuildCraft(); break;
                 case Screen.Interior: BuildInterior(); break;
                 case Screen.Settings: BuildSettings(); break;
+                case Screen.Journal: BuildJournal(); break;
                 case Screen.Dialogue: _dialogueKey = null; RefreshDialogue(); break;
             }
         }
@@ -612,6 +614,57 @@ namespace Immortal.Presentation.UI
                 sv.Add(row);
             }
             b.Add(Ui.Button("Закрыть (C)", () => _g.SetScreen(Screen.World)));
+        }
+
+        // ---------- Журнал ----------
+        void BuildJournal()
+        {
+            var s = _g.Session; var b = _journalBox; b.Clear();
+            b.style.width = 1000;
+            b.Add(Title("Журнал"));
+            var sv = Ui.Scroll(680); b.Add(sv);
+            var obj = ObjectiveSystem.Current(s);
+            if (obj != null) { sv.Add(Ui.Label("Цель: " + obj.title, 19, Ui.Gold, true)); sv.Add(Ui.Label(obj.text, 15)); }
+            int done = s.State.Narrative.Objectives.Count;
+            sv.Add(Ui.Label($"Выполнено целей: {done} из {s.Content.Objectives.Count - 1}", 13, Ui.Dim));
+
+            sv.Add(Ui.Label("Просьбы людей", 19, Ui.Gold, true));
+            int asks = 0;
+            foreach (var npc in s.State.Npcs)
+            {
+                if (npc.Recruited || !npc.Alive || !npc.QuestStarted) continue;
+                var def = RecruitmentSystem.Def(s, npc);
+                if (def?.quest == null) continue;
+                bool ready = RecruitmentSystem.QuestDone(s, npc);
+                string what = def.quest.type == "bring" ? $"принести {def.quest.amount} × {s.Content.ItemName(def.quest.item)} (у вас {s.State.Hero.Count(def.quest.item)})" : $"зачистить место: {def.quest.poiKind}";
+                sv.Add(Ui.Label($"{npc.Name}: {what}" + (ready ? " — готово, вернитесь к человеку" : ""), 15, ready ? Ui.Good : Ui.Text));
+                asks++;
+            }
+            if (asks == 0) sv.Add(Ui.Label("Нет. Спросите у людей в мире, чем помочь.", 14, Ui.Dim));
+            var known = s.State.Npcs.Where(n => !n.Recruited && n.Alive && n.KnownTraits.Count > 0).ToList();
+            if (known.Count > 0)
+            {
+                sv.Add(Ui.Label("Что вы знаете о людях", 19, Ui.Gold, true));
+                foreach (var n in known)
+                {
+                    var parts = new List<string>();
+                    if (n.KnownTraits.Contains("need")) parts.Add("нужда: " + s.Content.ItemName(n.Need ?? "berries"));
+                    if (n.KnownTraits.Contains("distrust")) parts.Add(n.Distrust >= 2 ? "недоверчив" : "открыт");
+                    if (n.KnownTraits.Contains("character")) parts.Add(RecruitmentSystem.CharacterName(n.Character));
+                    sv.Add(Ui.Label($"{n.Name}: {string.Join(", ", parts)}" + (n.Hostile ? " — враждебен" : s.State.Months < n.CooldownUntilMonths ? " — пока не хочет говорить" : ""), 14));
+                }
+            }
+
+            sv.Add(Ui.Label("Спутники и их судьбы", 19, Ui.Gold, true));
+            foreach (var c in s.State.Companions)
+                sv.Add(Ui.Label(c.Alive ? $"{c.Name} — {CompanionSystem.RoleName(c.Role)}, {Templates.RelationWord(c.Relation)}" : $"† {c.Name}" + (c.ParentId != null ? $", потомок {CompanionSystem.ShortName(s.Companion(c.ParentId)?.Name ?? "?")}" : ""), 14, c.Alive ? Ui.Text : Ui.Dim));
+            var descendants = s.State.Npcs.Where(n => n.IsDescendant && !n.Recruited && n.Alive).ToList();
+            if (descendants.Count > 0) sv.Add(Ui.Label("Потомки ждут встречи: " + string.Join(", ", descendants.Select(d => d.Name)), 14, Ui.Mystic));
+
+            sv.Add(Ui.Label("Воспоминания", 19, Ui.Gold, true));
+            sv.Add(Ui.Label(string.Join(", ", s.State.Hero.Memories.Select(m => HeroSystem.MemoryName(s, m))), 14, Ui.Mystic));
+            sv.Add(Ui.Label($"Открыто мест: {s.State.Pois.Count(p => p.Discovered)} · странностей мира замечено: {s.State.Narrative.HintsSeen}", 14, Ui.Dim));
+            b.Add(Ui.Button("Закрыть (J)", () => _g.SetScreen(Screen.World)));
         }
 
         // ---------- Настройки ----------

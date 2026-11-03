@@ -70,7 +70,11 @@ namespace Immortal.Core.Action
                 if ((s.State.Tick + u.Id) % 5 == 0)
                 {
                     var t = FindTarget(s, u, u.AggroRange);
-                    if (t != null) { u.TargetId = t.Id; u.Ai = AiState.Chase; }
+                    if (t != null)
+                    {
+                        u.TargetId = t.Id; u.Ai = AiState.Chase;
+                        if (t.Kind == UnitKind.Hero) s.Emit(new GameEvent { Type = GameEventType.Aggro, UnitId = u.Id, Pos = u.Pos });
+                    }
                 }
                 return;
             }

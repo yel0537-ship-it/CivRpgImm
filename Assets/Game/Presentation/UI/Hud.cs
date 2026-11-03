@@ -130,7 +130,7 @@ namespace Immortal.Presentation.UI
             _hover.pickingMode = PickingMode.Ignore;
             Root.Add(_hover);
 
-            _hint = Ui.Label("ЛКМ — идти/бить/говорить · 1–4 умения · Пробел рывок · I снаряжение · C ремесло · M карта · Tab правитель · F лагерь · R конь · Esc меню", 13, Ui.Dim);
+            _hint = Ui.Label("ЛКМ — идти/бить/говорить · 1–4 умения · Пробел рывок · I снаряжение · C ремесло · M карта · J журнал · Tab правитель · F лагерь · R конь · T ускорить время · Esc меню", 13, Ui.Dim);
             Ui.Absolute(_hint, 16, bottom: 4);
             _hint.pickingMode = PickingMode.Ignore;
             Root.Add(_hint);
@@ -219,7 +219,7 @@ namespace Immortal.Presentation.UI
         {
             if (panel == null) return;
             var h = s.State.Hero; var u = s.HeroUnit;
-            _date.text = $"{s.DateText} · {s.PlayerEraDef.name}";
+            _date.text = $"{s.DateText} · {s.PlayerEraDef.name}" + (GameRoot.Instance != null && GameRoot.Instance.FastForward ? "  ⏩×5" : "");
             _role.text = $"{HeroSystem.RoleName(h.Role)} · вид на {HeroSystem.ApparentAge(h):0} лет · глава {s.State.Chapter}" + (h.Mounted ? " · верхом" : "") + (h.AttributePoints > 0 ? $" · очков атрибутов: {h.AttributePoints} (I)" : "");
             if (u != null)
             {

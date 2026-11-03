@@ -8,7 +8,9 @@ namespace Immortal.Core
         BattleStarted, ZoneEntered, ZoneExited, Autosave, LevelUp, Crafted, OpenScreen,
         /// <summary>Юнит наносит удар (конец замаха) — для анимаций и звука.</summary>
         Strike,
-        ObjectiveCompleted, WindupStarted
+        ObjectiveCompleted, WindupStarted,
+        /// <summary>Враг заметил цель и начал преследование.</summary>
+        Aggro
     }
 
     /// <summary>Одноразовое событие. Presentation считывает очередь после тика.</summary>

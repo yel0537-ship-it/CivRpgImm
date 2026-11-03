@@ -68,6 +68,8 @@ namespace Immortal.Presentation
             _units = new UnitViews(transform, _world);
             _markers = new Markers(transform, _world);
             _ambience = new Ambience(transform, _world);
+            _ambience.Say = (t, text) => { if (text != null && t != null) { _hud.Bubble(t, text); _audio.Play("dialogue", t.position, 0.4f); } };
+            _ambience.UnitAnchor = id => _units.UnitTransform(id);
             CreateEventSystem();
             BuildUi();
             _audio = AudioService.Create(transform);

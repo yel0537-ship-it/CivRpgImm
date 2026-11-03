@@ -126,6 +126,27 @@ namespace Immortal.Core.Time
             if (!st.GameOver) EventSystem.Fire(s, "after_jump", new DialogueState());
         }
 
+        /// <summary>Тихо прожить несколько месяцев (дорога, ожидание) — без хроники, но мир живёт.</summary>
+        public static void Pass(GameSession s, int months)
+        {
+            if (months <= 0 || s.State.GameOver) return;
+            var st = s.State;
+            s.InTimeJump = true;
+            SpawnSystem.CollapseAll(s);
+            for (int m = 0; m < months && !st.GameOver; m++)
+            {
+                st.Months += 1.0;
+                st.LastWeekMonths = st.Months; st.LastMonthMonths = st.Months;
+                for (int w = 0; w < 4; w++) WorldSimulation.StepWeek(s);
+                WorldSimulation.StepMonth(s);
+                if (!st.Narrative.Flags.Contains("true_immortality")) st.Hero.VitalityYears -= 1.0 / 12.0;
+            }
+            s.InTimeJump = false;
+            if (!st.GameOver) Character.CompanionSystem.RespawnParty(s);
+            s.Map.RebuildBuildingBlockers(s.Content, st);
+            s.Emit(new GameEvent { Type = GameEventType.TimeJumped, Value = 0, Text = "travel" });
+        }
+
         /// <summary>Поражение героя: долгий сон на десятилетия, часть сырья потеряна.</summary>
         public static void LongSleep(GameSession s)
         {

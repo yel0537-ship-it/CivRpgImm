@@ -40,11 +40,77 @@ namespace Immortal.Presentation
             if (_weatherGo != null) Object.Destroy(_weatherGo);
         }
 
+        /// <summary>Куда показывать реплики (назначает GameRoot).</summary>
+        public System.Action<Transform, string> Say;
+        /// <summary>Как найти вид спутника по id юнита (для реплик в отряде).</summary>
+        public System.Func<int, Transform> UnitAnchor;
+        float _barkTimer = 4f, _companionTimer = 25f;
+
         public void Update(Vec2 hero, Vector3 heroWorld, float dt)
         {
             if (_s == null) return;
             UpdateCitizens(hero, dt);
             UpdateWeather(hero, heroWorld);
+            UpdateBarks(heroWorld, dt);
+        }
+
+        // ---------- Реплики: государство слышно через людей ----------
+        void UpdateBarks(Vector3 heroWorld, float dt)
+        {
+            if (Say == null) return;
+            _barkTimer -= dt; _companionTimer -= dt;
+            if (_barkTimer <= 0)
+            {
+                _barkTimer = 5f + (float)_rnd.NextDouble() * 5f;
+                foreach (var kv in _citizens)
+                {
+                    var city = _s.City(kv.Key);
+                    foreach (var z in kv.Value)
+                    {
+                        if (Vector3.Distance(z.Go.transform.position, heroWorld) > 11f) continue;
+                        Say(z.Go.transform, Line(CitizenKey(city), null));
+                        return;
+                    }
+                }
+            }
+            if (_companionTimer <= 0)
+            {
+                _companionTimer = 30f + (float)_rnd.NextDouble() * 30f;
+                var party = _s.State.Hero.PartyCompanionUnits;
+                if (party.Count == 0 || _s.State.Hero.CombatTimer > 0) return;
+                var u = _s.FindUnit(party[_rnd.Next(party.Count)]);
+                var c = u != null ? _s.Companion(u.CompanionId) : null;
+                if (c == null) return;
+                string key = _s.State.Hero.InSmoke ? "bark_smoke" : c.Relation < -15 ? "bark_companion_sour" : "bark_companion";
+                Say(UnitAnchor?.Invoke(u.Id), Line(key, c.Name));
+            }
+        }
+
+        string CitizenKey(CityState city)
+        {
+            var ns = _s.State.Narrative;
+            var keys = new List<string>();
+            if (city != null && city.Hungry) { keys.Add("bark_hungry"); keys.Add("bark_hungry"); }
+            foreach (var r in _s.State.Relations) if (r.War && (r.A == _s.State.PlayerNationId || r.B == _s.State.PlayerNationId)) { keys.Add("bark_war"); break; }
+            if (ns.Taboo == "strict") keys.Add("bark_taboo_strict");
+            if (ns.Flags.Contains("taboo_broken")) keys.Add("bark_taboo_broken");
+            if (ns.Flags.Contains("inequality_known")) keys.Add("bark_inequality");
+            if (ns.Flags.Contains("legend_of_return")) keys.Add("bark_legend");
+            if (ns.Flags.Contains("worshipped")) keys.Add("bark_worshipped");
+            if (_s.Content.EraOrder(_s.PlayerEra) == 1) keys.Add("bark_city_states");
+            if (_s.Content.EraOrder(_s.PlayerEra) >= 2) keys.Add("bark_ancient");
+            foreach (var n in _s.State.Nations) if (!n.IsPlayer && !n.Leader.Alive) { keys.Add("bark_regency"); break; }
+            if (keys.Count == 0 || _rnd.NextDouble() < 0.3) return "bark_default";
+            return keys[_rnd.Next(keys.Count)];
+        }
+
+        string Line(string key, string companion)
+        {
+            if (!_s.Content.ChronicleFile.templates.TryGetValue(key, out var list) || list.Count == 0) return null;
+            string rival = "соседи";
+            foreach (var n in _s.State.Nations) if (!n.IsPlayer) { rival = n.Name; break; }
+            return list[_rnd.Next(list.Count)].Replace("{hero}", _s.State.Hero.Name).Replace("{companion}", companion ?? "")
+                .Replace("{rival}", rival).Replace("{capital}", _s.Capital(_s.PlayerNation)?.Name ?? "");
         }
 
         // ---------- Жители ----------

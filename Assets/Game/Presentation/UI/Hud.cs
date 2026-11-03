@@ -173,6 +173,39 @@ namespace Immortal.Presentation.UI
             _floating.Add(new FloatText { L = l, World = world, T = 0 });
         }
 
+        sealed class BubbleText { public Label L; public Transform Anchor; public float T, Life; }
+        readonly List<BubbleText> _bubbles = new List<BubbleText>();
+
+        /// <summary>Реплика над головой (жители, спутники). Следует за якорем.</summary>
+        public void Bubble(Transform anchor, string text, float seconds = 3.5f)
+        {
+            if (anchor == null || string.IsNullOrEmpty(text) || _bubbles.Count >= 4) return;
+            var l = Ui.Label(text, 15, new Color(1f, 0.97f, 0.88f));
+            l.style.position = Position.Absolute;
+            l.style.backgroundColor = new Color(0.1f, 0.09f, 0.08f, 0.8f);
+            l.style.maxWidth = 320;
+            Ui.Pad(l, 5); Ui.Radius(l, 6);
+            l.pickingMode = PickingMode.Ignore;
+            _labels.Add(l);
+            _bubbles.Add(new BubbleText { L = l, Anchor = anchor, Life = seconds });
+        }
+
+        void UpdateBubbles(IPanel panel, Camera cam, float dt)
+        {
+            for (int i = _bubbles.Count - 1; i >= 0; i--)
+            {
+                var b = _bubbles[i];
+                b.T += dt;
+                if (b.Anchor == null || b.T > b.Life) { b.L.RemoveFromHierarchy(); _bubbles.RemoveAt(i); continue; }
+                var w = b.Anchor.position + Vector3.up * 2.6f;
+                var vp = cam.WorldToViewportPoint(w);
+                Ui.Show(b.L, vp.z > 0);
+                var p = RuntimePanelUtils.CameraTransformWorldToPanel(panel, w, cam);
+                b.L.style.left = p.x - 80; b.L.style.top = p.y - 30;
+                b.L.style.opacity = Mathf.Clamp01((b.Life - b.T) * 2f);
+            }
+        }
+
         public void SetHover(string text, Vector2 panelPos)
         {
             _hover.text = text ?? "";
@@ -278,6 +311,7 @@ namespace Immortal.Presentation.UI
             if (_noticeTimer > 0) { _noticeTimer -= dt; _notice.style.opacity = Mathf.Clamp01(_noticeTimer); }
             else _notice.text = "";
 
+            UpdateBubbles(panel, cam, dt);
             for (int i = _floating.Count - 1; i >= 0; i--)
             {
                 var f = _floating[i];

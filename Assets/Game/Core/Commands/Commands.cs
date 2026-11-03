@@ -357,6 +357,45 @@ namespace Immortal.Core.Commands
         }
     }
 
+    /// <summary>Быстрое перемещение по дорогам в свой или союзный город. Время в пути проходит по-настоящему.</summary>
+    public sealed class TravelTo : IGameCommand
+    {
+        public string CityId; public TravelTo(string c) { CityId = c; }
+
+        public static bool CanTravel(GameSession s, CityState c, out string reason, out int months)
+        {
+            reason = null; months = 0;
+            var hero = s.HeroUnit;
+            if (hero == null || c == null) { reason = "некуда"; return false; }
+            if (s.State.PlayerNationId == null) { reason = "нужна своя община"; return false; }
+            if (s.State.Hero.CombatTimer > 0) { reason = "нельзя в бою"; return false; }
+            bool own = c.NationId == s.State.PlayerNationId;
+            bool friendly = c.NationId != null && !own && Diplomacy.Rel(s, c.NationId, s.State.PlayerNationId) is var r && (r.Agreements.Contains("open_borders") || r.Agreements.Contains("defensive_alliance"));
+            if (!own && !friendly) { reason = "только в свои города или по открытым границам"; return false; }
+            if (!Immortal.Core.World.Vision.IsExplored(s.State, s.Map.TileAt(c.Pos))) { reason = "путь неизвестен"; return false; }
+            float d = Vec2.Distance(hero.Pos, c.Pos);
+            if (d < 40f) { reason = "это рядом — дойдите пешком"; return false; }
+            float speed = s.State.Hero.HasHorse ? 2.2f : 1.4f; // сотни метров в месяц по дорогам
+            months = Math.Max(1, (int)Math.Ceiling(d / (speed * 100f)));
+            return true;
+        }
+
+        public void Execute(GameSession s)
+        {
+            var c = s.City(CityId);
+            if (!CanTravel(s, c, out var reason, out int months)) { s.Message($"Нельзя отправиться: {reason}."); return; }
+            TimeJumpSystem.Pass(s, months);
+            var hero = s.HeroUnit;
+            if (hero != null)
+            {
+                hero.Pos = s.Map.NearestWalkable(c.Pos + new Vec2(0, -6)); hero.PrevPos = hero.Pos;
+                hero.Path = null; hero.TargetId = 0;
+                foreach (var id in s.State.Hero.PartyCompanionUnits) { var u = s.FindUnit(id); if (u != null) { u.Pos = s.Map.NearestWalkable(hero.Pos + new Vec2(1.5f, -1)); u.PrevPos = u.Pos; } }
+            }
+            s.Message($"Дорога до {c.Name} заняла {months} мес.");
+        }
+    }
+
     public sealed class DepositAll : IGameCommand
     {
         public void Execute(GameSession s)

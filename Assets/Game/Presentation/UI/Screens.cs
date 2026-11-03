@@ -278,6 +278,17 @@ namespace Immortal.Presentation.UI
                 legend.Add(r);
             }
             legend.Add(Ui.Label("Белые точки — города, жёлтая — вы, лиловые — дым, цветные — армии.", 13, Ui.Dim));
+            if (s.PlayerNation != null)
+            {
+                legend.Add(Ui.Label("Дороги", 18, Ui.Gold, true));
+                foreach (var c in s.State.Cities)
+                {
+                    if (!TravelTo.CanTravel(s, c, out var why, out int months) && why != "это рядом — дойдите пешком") continue;
+                    var cid = c.Id;
+                    bool ok = why == null;
+                    legend.Add(Ui.Button(ok ? $"В {c.Name} ({months} мес.)" : $"{c.Name} — рядом", () => { _g.Exec(new TravelTo(cid)); _g.SetScreen(Screen.World); }, ok, 14));
+                }
+            }
             legend.Add(Ui.Button("Закрыть (M)", () => _g.SetScreen(Screen.World)));
             row.Add(legend);
             b.Add(row);

@@ -93,6 +93,21 @@ namespace Immortal.Tests
         }
 
         [Test]
+        public void TravelToOwnCityTakesTime()
+        {
+            var s = WithCamp(45, 4);
+            var pn = s.PlayerNation;
+            var far = CitySystem.Found(s, pn, s.Capital(pn).Pos + new Vec2(180, 30), "Дальний Брод", 1, false);
+            Immortal.Core.World.Vision.Reveal(s.State, s.Map, far.Pos, 10f);
+            double before = s.State.Months;
+            s.Execute(new TravelTo(far.Id));
+            Assert.Less(Vec2.Distance(s.HeroUnit.Pos, far.Pos), 12f, "герой прибыл");
+            Assert.GreaterOrEqual(s.State.Months - before, 1.0, "дорога заняла время");
+            var rival = s.State.Nations.First(n => !n.IsPlayer);
+            Assert.IsFalse(TravelTo.CanTravel(s, s.Capital(rival), out _, out _), "в чужую столицу без открытых границ нельзя");
+        }
+
+        [Test]
         public void SettlersFoundNewCity()
         {
             var s = WithCamp(44, 12);

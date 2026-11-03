@@ -256,6 +256,8 @@ namespace Immortal.Presentation
             if (_views.TryGetValue(unitId, out var v)) v.Rig.Animator?.Fire(cast ? AnimEvent.Cast : AnimEvent.Attack);
         }
 
+        public Transform UnitTransform(int unitId) => _views.TryGetValue(unitId, out var v) && v.Rig.Root.activeSelf ? v.Rig.Root.transform : null;
+
         public Vector3? UnitWorldPos(int unitId, float lift)
         {
             if (_views.TryGetValue(unitId, out var v) && v.Rig.Root.activeSelf) return v.Rig.Root.transform.position + Vector3.up * (v.Rig.Height + lift);

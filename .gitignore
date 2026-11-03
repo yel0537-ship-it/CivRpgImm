@@ -28,3 +28,6 @@ sysinfo.txt
 *.aab
 # tools output
 /tools/out/
+/tools/dotnet/bin/
+/tools/dotnet/obj/
+!/tools/dotnet/CoreTests.csproj

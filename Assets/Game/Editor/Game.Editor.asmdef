@@ -1,0 +1,16 @@
+{
+    "name": "Game.Editor",
+    "rootNamespace": "Immortal.EditorTools",
+    "references": ["Game.Core", "Game.Presentation", "Unity.RenderPipelines.Universal.Runtime", "Unity.RenderPipelines.Core.Runtime"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [
+        { "name": "com.unity.render-pipelines.universal", "expression": "12.0.0", "define": "IMMORTAL_URP" }
+    ],
+    "noEngineReferences": false
+}

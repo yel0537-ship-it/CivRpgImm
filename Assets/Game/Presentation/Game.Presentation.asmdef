@@ -1,16 +1,26 @@
 {
     "name": "Game.Presentation",
     "rootNamespace": "Immortal.Presentation",
-    "references": ["Game.Core", "Unity.InputSystem", "UnityEngine.UI"],
+    "references": [
+        "Game.Core",
+        "Unity.InputSystem",
+        "UnityEngine.UI"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "Newtonsoft.Json.dll"
+    ],
     "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [
-        { "name": "com.unity.inputsystem", "expression": "1.0.0", "define": "IMMORTAL_INPUT_SYSTEM" }
+        {
+            "name": "com.unity.inputsystem",
+            "expression": "1.0.0",
+            "define": "IMMORTAL_INPUT_SYSTEM"
+        }
     ],
     "noEngineReferences": false
 }

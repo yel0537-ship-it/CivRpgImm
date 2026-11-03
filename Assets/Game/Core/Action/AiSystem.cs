@@ -118,6 +118,7 @@ namespace Immortal.Core.Action
             {
                 u.Ai = AiState.Windup; u.StateTimer = u.Windup;
                 u.AttackDir = (target.Pos - u.Pos).Normalized;
+                s.Emit(new GameEvent { Type = GameEventType.WindupStarted, UnitId = u.Id, Pos = u.Pos });
                 u.Facing = u.AttackDir;
                 u.Vel = Vec2.Zero;
                 return;

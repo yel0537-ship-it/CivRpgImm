@@ -19,6 +19,13 @@ namespace Immortal.Presentation.UI
         readonly VisualElement _log;
         readonly List<(Label l, float t)> _messages = new List<(Label, float)>();
         float _noticeTimer;
+        readonly Label _objTitle, _objText;
+        readonly VisualElement _objBox;
+        readonly Image _mini;
+        Texture2D _miniTex;
+        Color32[] _miniPx;
+        float _miniTimer;
+        const int MiniTiles = 64, MiniPx = 128;
 
         sealed class FloatText { public Label L; public Vector3 World; public float T; }
         readonly List<FloatText> _floating = new List<FloatText>();
@@ -51,6 +58,26 @@ namespace Immortal.Presentation.UI
             stats.Add(_essence); stats.Add(_influence);
             Root.Add(stats);
 
+            // Миникарта и текущая цель — справа сверху.
+            var right = new VisualElement { pickingMode = PickingMode.Ignore };
+            Ui.Absolute(right, right: 16, top: 16);
+            right.style.width = 340;
+            right.style.alignItems = Align.FlexEnd;
+            var miniFrame = Ui.Box(new Color(0.05f, 0.06f, 0.08f, 0.8f), 4);
+            miniFrame.pickingMode = PickingMode.Ignore;
+            _mini = new Image { scaleMode = ScaleMode.StretchToFill, pickingMode = PickingMode.Ignore };
+            _mini.style.width = 200; _mini.style.height = 200;
+            miniFrame.Add(_mini);
+            right.Add(miniFrame);
+            _objBox = Ui.Box(new Color(0.05f, 0.06f, 0.08f, 0.8f), 8);
+            _objBox.pickingMode = PickingMode.Ignore;
+            _objBox.style.marginTop = 8; _objBox.style.width = 340;
+            _objTitle = Ui.Label("", 16, Ui.Gold, true); _objTitle.pickingMode = PickingMode.Ignore;
+            _objText = Ui.Label("", 14); _objText.pickingMode = PickingMode.Ignore;
+            _objBox.Add(_objTitle); _objBox.Add(_objText);
+            right.Add(_objBox);
+            Root.Add(right);
+
             _party = Ui.Label("", 14, Ui.Dim);
             Ui.Absolute(_party, 18, 260);
             _party.pickingMode = PickingMode.Ignore;
@@ -77,7 +104,7 @@ namespace Immortal.Presentation.UI
             Root.Add(bar);
 
             _log = new VisualElement { pickingMode = PickingMode.Ignore };
-            Ui.Absolute(_log, right: 16, bottom: 100);
+            Ui.Absolute(_log, right: 16, bottom: 110);
             _log.style.width = 440;
             _log.style.alignItems = Align.FlexEnd;
             Root.Add(_log);
@@ -201,6 +228,12 @@ namespace Immortal.Presentation.UI
             var pn = s.PlayerNation;
             _influence.text = pn != null && Roles.Rank(h.Role) >= 2 ? $"Влияние правителя: {pn.Influence:0}" : pn != null ? $"Община: {CitySystem.NationPopulation(s, pn):0} чел." : "Нет общины (F — основать лагерь)";
 
+            var obj = Immortal.Core.Narrative.ObjectiveSystem.Current(s);
+            Ui.Show(_objBox, obj != null);
+            if (obj != null) { _objTitle.text = "Цель: " + obj.title; _objText.text = obj.text; }
+            _miniTimer -= dt;
+            if (_miniTimer <= 0) { _miniTimer = 0.4f; DrawMinimap(s); }
+
             var party = new System.Text.StringBuilder();
             foreach (var id in h.PartyCompanionUnits)
             {
@@ -241,6 +274,62 @@ namespace Immortal.Presentation.UI
                 f.L.style.opacity = 1f - f.T / 0.9f;
                 if (f.T > 0.9f) { Ui.Show(f.L, false); _floatPool.Push(f.L); _floating.RemoveAt(i); }
             }
+        }
+
+        void DrawMinimap(GameSession s)
+        {
+            var hero = s.HeroUnit; if (hero == null) return;
+            if (_miniTex == null)
+            {
+                _miniTex = new Texture2D(MiniPx, MiniPx, TextureFormat.RGBA32, false) { filterMode = FilterMode.Point, wrapMode = TextureWrapMode.Clamp };
+                _miniPx = new Color32[MiniPx * MiniPx];
+                _mini.image = _miniTex;
+            }
+            var map = s.Map;
+            map.TileXY(hero.Pos, out int hx, out int hy);
+            var own = s.State.TerritoryOwner; int cell = s.Balance.territoryCell; int nx = s.State.TerritoryCellsX;
+            int scale = MiniPx / MiniTiles;
+            var dark = new Color32(10, 11, 14, 255);
+            for (int ty = 0; ty < MiniTiles; ty++)
+            for (int tx = 0; tx < MiniTiles; tx++)
+            {
+                int wx = hx - MiniTiles / 2 + tx, wy = hy - MiniTiles / 2 + ty;
+                Color32 c = dark;
+                if (map.InBounds(wx, wy))
+                {
+                    int idx = wy * map.Size + wx;
+                    if (Immortal.Core.World.Vision.IsExplored(s.State, idx))
+                    {
+                        Color col = Look.Hex(map.TerrainAt(idx).color);
+                        if (own != null) { int o = own[(wy / cell) * nx + (wx / cell)]; if (o > 0) col = Color.Lerp(col, Look.Hex(s.State.Nations[o - 1].Color), 0.3f); }
+                        c = col;
+                    }
+                }
+                for (int py = 0; py < scale; py++) for (int px = 0; px < scale; px++) _miniPx[(ty * scale + py) * MiniPx + tx * scale + px] = c;
+            }
+            void Dot(Vec2 p, Color32 col, int r)
+            {
+                map.TileXY(p, out int tx, out int ty);
+                int cx = (tx - hx + MiniTiles / 2) * scale, cy = (ty - hy + MiniTiles / 2) * scale;
+                for (int dy = -r; dy <= r; dy++) for (int dx = -r; dx <= r; dx++)
+                {
+                    int x = cx + dx, y = cy + dy;
+                    if (x >= 0 && y >= 0 && x < MiniPx && y < MiniPx) _miniPx[y * MiniPx + x] = col;
+                }
+            }
+            foreach (var p in s.State.Pois) if (p.Discovered) Dot(p.Pos, Look.Hex(s.Content.Poi[p.DefId].color), 1);
+            foreach (var c in s.State.Cities) Dot(c.Pos, new Color32(255, 255, 255, 255), 2);
+            float vis = s.State.Hero.InSmoke ? s.Balance.vision.smokeRadius : s.Balance.vision.radius;
+            foreach (var u in s.State.Units)
+            {
+                if (u.Ai == AiState.Dead || Vec2.Distance(u.Pos, hero.Pos) > vis) continue;
+                if (u.Kind == UnitKind.Companion) Dot(u.Pos, new Color32(110, 190, 255, 255), 1);
+                else if (s.IsHostile(Teams.Player, u.Team)) Dot(u.Pos, new Color32(230, 60, 50, 255), 1);
+                else if (u.Kind == UnitKind.Npc) Dot(u.Pos, new Color32(235, 230, 210, 255), 1);
+            }
+            Dot(hero.Pos, new Color32(255, 215, 60, 255), 2);
+            _miniTex.SetPixels32(_miniPx);
+            _miniTex.Apply(false);
         }
 
         static void SetFill(VisualElement fill, float frac, float width) => fill.style.width = Mathf.Clamp01(frac) * width;

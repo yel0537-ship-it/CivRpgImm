@@ -33,6 +33,10 @@ namespace Immortal.Presentation
         float _holdTimer, _autosaveTimer;
         Vector3 _cursorWorld;
         bool _cursorValid;
+        AudioService _audio;
+        float _musicTimer, _stepDist;
+        Vector3 _lastHeroWorld;
+        public AudioService Audio => _audio;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void AutoCreate()
@@ -51,6 +55,7 @@ namespace Immortal.Presentation
                 var ta = Resources.Load<TextAsset>("Data/" + name);
                 return ta != null ? ta.text : null;
             });
+            Look.InitTerrain(Content);
             var errors = ContentValidator.Validate(Content);
             foreach (var e in errors) Debug.LogWarning("[Контент] " + e);
 
@@ -59,8 +64,27 @@ namespace Immortal.Presentation
             _units = new UnitViews(transform, _world);
             CreateEventSystem();
             BuildUi();
+            _audio = AudioService.Create(transform);
+            Ui.OnClickSound = () => _audio.Play("ui_click");
+            CreateSun();
             SetScreen(UiScreen.Menu);
             ScreenshotRunner.TryStart(this);
+        }
+
+        /// <summary>Солнце нужно только моделям со стандартными материалами; примитивы освещает свой шейдер.</summary>
+        void CreateSun()
+        {
+            if (FindFirstObjectByType<Light>() != null) return;
+            var go = new GameObject("Sun");
+            go.transform.SetParent(transform, false);
+            var l = go.AddComponent<Light>();
+            l.type = LightType.Directional;
+            l.intensity = 1.1f;
+            l.color = new Color(1f, 0.96f, 0.88f);
+            l.shadows = LightShadows.Soft;
+            go.transform.rotation = Quaternion.LookRotation(-new Vector3(0.35f, 0.85f, -0.4f).normalized);
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = new Color(0.45f, 0.47f, 0.52f);
         }
 
         void CreateEventSystem()
@@ -103,6 +127,8 @@ namespace Immortal.Presentation
 
         public void SetScreen(UiScreen s)
         {
+            if (s != Current && (s == UiScreen.Map || s == UiScreen.Ruler || s == UiScreen.Inventory || s == UiScreen.Craft || s == UiScreen.Interior))
+                _audio?.Play("ui_open");
             Current = s;
             Ui.Show(_hud.Root, Session != null && (s == UiScreen.World || s == UiScreen.Dialogue));
             _screens.Show(s);
@@ -152,7 +178,7 @@ namespace Immortal.Presentation
         void Update()
         {
             float dt = Time.deltaTime;
-            if (Session == null) { if (Current != UiScreen.Menu) SetScreen(UiScreen.Menu); return; }
+            if (Session == null) { if (Current != UiScreen.Menu && Current != UiScreen.Settings) SetScreen(UiScreen.Menu); _audio.SetMusic("menu"); _audio.SetAmbient(); return; }
             var st = Session.State;
 
             // Автомат экранов, управляемый состоянием симуляции.
@@ -191,13 +217,54 @@ namespace Immortal.Presentation
             Shader.SetGlobalVector(Look.HeroPosId, heroWorld);
             Shader.SetGlobalFloat(Look.VisionId, smoke ? Session.Balance.vision.smokeRadius : Session.Balance.vision.radius + 4f);
             Shader.SetGlobalFloat(Look.FogDarkId, smoke ? 0.88f : 0.5f);
+            Shader.SetGlobalColor(Look.SeasonId, SeasonTint(Core.Time.WorldClock.Month(Session)));
 
+            _audio.SetListener(heroWorld);
+            UpdateAudio(dt, hero, heroWorld);
             _cam.Update(heroWorld + Vector3.up * 1f, Current == UiScreen.World && !_screens.IsOverUi(_doc.rootVisualElement.panel, GameInput.MousePosition) ? GameInput.Scroll : 0f, dt);
             _world.Update(heroPos, dt);
             _units.Sync(alpha, dt);
             UpdateLabels(heroPos);
             _hud.Update(Session, _doc.rootVisualElement.panel, _cam.Cam, dt);
         }
+
+        /// <summary>Времена года видны в мире: зимой холоднее и светлее, осенью — рыжее.</summary>
+        static Color SeasonTint(int month)
+        {
+            Color winter = new Color(0.92f, 0.97f, 1.1f, 1), spring = new Color(0.97f, 1.05f, 0.95f, 1), summer = new Color(1.02f, 1f, 0.94f, 1), autumn = new Color(1.1f, 0.95f, 0.8f, 1);
+            Color[] seq = { winter, winter, spring, spring, spring, summer, summer, summer, autumn, autumn, autumn, winter };
+            return seq[Mathf.Clamp(month, 0, 11)];
+        }
+
+        // ---------- Звук по ситуации ----------
+        void UpdateAudio(float dt, Unit hero, Vector3 heroWorld)
+        {
+            var st = Session.State;
+            if (hero != null && Current == UiScreen.World && hero.Ai != AiState.Dead)
+            {
+                float moved = Vector3.Distance(new Vector3(heroWorld.x, 0, heroWorld.z), new Vector3(_lastHeroWorld.x, 0, _lastHeroWorld.z));
+                if (moved < 3f) _stepDist += moved;
+                if (_stepDist > (st.Hero.Mounted ? 2.4f : 1.7f)) { _stepDist = 0; _audio.Play(st.Hero.Mounted ? "hoof" : "footstep", heroWorld, 0.5f); }
+            }
+            _lastHeroWorld = heroWorld;
+
+            _musicTimer -= dt;
+            if (_musicTimer > 0) return;
+            _musicTimer = 0.5f;
+            if (Current == UiScreen.Menu || Current == UiScreen.Settings || Current == UiScreen.End) { _audio.SetMusic("menu"); return; }
+            if (Current == UiScreen.Chronicle) { _audio.SetMusic("chronicle", "menu"); return; }
+            string region = hero != null ? Session.Map.RegionAt(hero.Pos).id : null;
+            bool fighting = false;
+            if (hero != null && st.Hero.CombatTimer > 0)
+                foreach (var u in st.Units)
+                    if (u.Ai != AiState.Dead && Session.IsHostile(Teams.Player, u.Team) && Vec2.Distance(u.Pos, hero.Pos) < 20f) { fighting = true; break; }
+            if (st.Hero.InSmoke) { _audio.SetMusic("smoke"); _audio.SetAmbient("smoke"); return; }
+            if (fighting) _audio.SetMusic("combat");
+            else _audio.SetMusic("region:" + region, "era:" + Session.PlayerEra, "world");
+            _audio.SetAmbient("region:" + region, "wind");
+        }
+
+        void Sfx(string key, Vec2 pos, float volume = 1f, string fallback = null) => _audio.Play(key, _world.Ground(pos, 1f), volume, fallback);
 
         void HandleGlobalKeys()
         {
@@ -293,16 +360,23 @@ namespace Immortal.Presentation
                         _units.OnHit(e.UnitId);
                         var hp = _units.UnitWorldPos(e.UnitId, 0.2f);
                         var tu = Session.FindUnit(e.UnitId);
-                        if (hp.HasValue) _hud.Floating(hp.Value, $"{e.Value:0}", e.Crit ? new Color(1f, 0.85f, 0.2f) : tu != null && tu.Team == Teams.Player ? new Color(1f, 0.35f, 0.3f) : Color.white, e.Crit ? 24 : 18);
+                        bool ours = tu != null && tu.Team == Teams.Player;
+                        Sfx(ours ? "hit_hero" : "hit", e.Pos);
+                        if (tu != null && tu.Kind == UnitKind.Hero) _cam.Shake(Mathf.Clamp(e.Value / 40f, 0.1f, 0.6f));
+                        else if (e.Crit) _cam.Shake(0.15f);
+                        if (hp.HasValue && GameSettings.DamageNumbers) _hud.Floating(hp.Value, $"{e.Value:0}", e.Crit ? new Color(1f, 0.85f, 0.2f) : tu != null && tu.Team == Teams.Player ? new Color(1f, 0.35f, 0.3f) : Color.white, e.Crit ? 24 : 18);
                         break;
                     case GameEventType.Death:
-                        _units.Burst(_world.Ground(e.Pos, 0.8f), 1f, new Color(0.9f, 0.9f, 0.9f));
+                        _units.Burst("death", _world.Ground(e.Pos, 0.8f), 1f, new Color(0.9f, 0.9f, 0.9f));
+                        Sfx("death", e.Pos);
                         break;
                     case GameEventType.Pickup:
                         _hud.Floating(_world.Ground(e.Pos, 1.5f), e.Text, e.Id == "essence" ? Ui.Mystic : Ui.Good, 16);
+                        Sfx(e.Id == "essence" ? "essence" : "pickup", e.Pos);
                         break;
                     case GameEventType.Gathered:
                         _world.OnGathered((int)e.Value);
+                        Sfx("gather", e.Pos);
                         _hud.Floating(_world.Ground(e.Pos, 1.5f), e.Text, Ui.Good, 15);
                         break;
                     case GameEventType.Message: _hud.Message(e.Text); break;
@@ -310,29 +384,45 @@ namespace Immortal.Presentation
                         if (e.Id == "explosion")
                         {
                             var col = e.Text != null && Content.Abilities.TryGetValue(e.Text, out var ad) ? Look.Hex(ad.color, new Color(1f, 0.5f, 0.2f)) : new Color(1f, 0.5f, 0.2f);
-                            _units.Burst(_world.Ground(e.Pos, 0.6f), e.Value, col, 0.4f);
+                            Sfx("explosion_" + e.Text, e.Pos, 1f, "explosion");
+                            if (Session.HeroUnit != null && Vec2.Distance(e.Pos, Session.HeroUnit.Pos) < 16f) _cam.Shake(0.35f);
+                            _units.Burst(e.Text != null && ViewFactory.TrySpawnFx(transform, "explosion_" + e.Text, _world.Ground(e.Pos, 0.3f), Vector3.zero, e.Value) ? "__none" : "explosion", _world.Ground(e.Pos, 0.6f), e.Value, col, 0.4f);
                         }
                         else
                         {
                             var caster = Session.FindUnit(e.UnitId);
-                            if (caster != null && Content.Abilities.TryGetValue(e.Id ?? "", out var a) && (a.type == "arc" || a.type == "buff"))
-                                _units.Slash(_world.Ground(caster.Pos), new Vector3(caster.Facing.x, 0, caster.Facing.y), a.type == "buff" ? 2.5f : a.range, Look.Hex(a.color, Color.white));
+                            if (caster != null && Content.Abilities.TryGetValue(e.Id ?? "", out var a))
+                            {
+                                _units.OnStrike(caster.Id, a.mystic || a.type == "buff" || a.type == "area");
+                                Sfx("ability:" + a.id, caster.Pos, 1f, a.id == "dash" ? "dash" : a.mystic || a.type == "buff" || a.type == "area" ? "cast" : a.type == "projectile" ? "shoot" : "swing");
+                                if (a.type == "arc" || a.type == "buff")
+                                    _units.Slash("slash_" + a.id, _world.Ground(caster.Pos), new Vector3(caster.Facing.x, 0, caster.Facing.y), a.type == "buff" ? 2.5f : a.range, Look.Hex(a.color, Color.white));
+                            }
                         }
                         break;
-                    case GameEventType.EraChanged: _hud.Notice($"Новая эпоха: {e.Text}", 7f); _world.Bind(Session); break;
-                    case GameEventType.StageChanged: _hud.Notice($"Поселение выросло: {e.Text}", 5f); break;
+                    case GameEventType.EraChanged: _hud.Notice($"Новая эпоха: {e.Text}", 7f); _world.Bind(Session); _audio.Play("era"); break;
+                    case GameEventType.StageChanged: _hud.Notice($"Поселение выросло: {e.Text}", 5f); _audio.Play("objective"); break;
                     case GameEventType.TimeJumped:
+                        _audio.Play("timejump");
                         _world.Bind(Session); _units.Bind(Session);
                         if (Session.HeroUnit != null) _cam.Snap(_world.Ground(Session.HeroUnit.Pos));
                         break;
-                    case GameEventType.HeroDefeated: _hud.Notice("Вы пали… и уснули на десятилетия.", 6f); break;
+                    case GameEventType.HeroDefeated: _hud.Notice("Вы пали… и уснули на десятилетия.", 6f); _audio.Play("death"); _cam.Shake(0.8f); break;
                     case GameEventType.Discovered: _hud.Message($"Открыто место: {e.Text}", Ui.Gold); break;
-                    case GameEventType.CompanionDied: _hud.Message($"Умер спутник: {e.Text}", Ui.Bad); break;
+                    case GameEventType.CompanionDied: _hud.Message($"Умер спутник: {e.Text}", Ui.Bad); _audio.Play("sad"); break;
                     case GameEventType.TechResearched: _hud.Notice($"Открытие: {e.Text}", 3f); break;
                     case GameEventType.BattleStarted: _hud.Notice($"Битва! ({e.Text})", 3f); break;
-                    case GameEventType.ZoneEntered: _hud.Notice("Дым", 2f); break;
+                    case GameEventType.ZoneEntered: _hud.Notice("Дым", 2f); _audio.Play("zone_enter"); break;
                     case GameEventType.Autosave: SaveSystem.Save(Session, "auto"); break;
-                    case GameEventType.Rejuvenated: _units.Burst(_world.Ground(Session.HeroUnit.Pos, 1f), 2.5f, Ui.Mystic, 0.8f); break;
+                    case GameEventType.Rejuvenated: _audio.Play("essence"); _units.Burst("rejuvenate", _world.Ground(Session.HeroUnit.Pos, 1f), 2.5f, Ui.Mystic, 0.8f); break;
+                    case GameEventType.Strike: _units.OnStrike(e.UnitId, false); Sfx(e.Id == "ranged" ? "shoot" : "strike", e.Pos, 0.8f); break;
+                    case GameEventType.WindupStarted: Sfx("windup", e.Pos, 0.5f); break;
+                    case GameEventType.Recruited: _audio.Play("recruit"); break;
+                    case GameEventType.BuildingBuilt: if (Session.HeroUnit != null && Vec2.Distance(e.Pos, Session.HeroUnit.Pos) < 60f) Sfx("build", e.Pos); break;
+                    case GameEventType.Crafted: _audio.Play("build"); break;
+                    case GameEventType.DialogueStarted: _audio.Play("dialogue"); break;
+                    case GameEventType.LevelUp: if (Session.HeroUnit != null) _units.Burst("levelup", _world.Ground(Session.HeroUnit.Pos, 1f), 1.5f, Ui.Gold, 0.6f); _hud.Message(e.Text, Ui.Gold); break;
+                    case GameEventType.ObjectiveCompleted: _hud.Notice($"Цель выполнена: {e.Text}", 4f); _audio.Play("objective"); break;
                     case GameEventType.OpenScreen: OpenFromWorld(e); break;
                 }
             }

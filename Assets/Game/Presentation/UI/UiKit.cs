@@ -18,9 +18,13 @@ namespace Immortal.Presentation.UI
         public static readonly Color Mystic = new Color(0.75f, 0.6f, 1f);
 
         static Font _font;
+        /// <summary>Звук нажатия кнопок (назначает GameRoot).</summary>
+        public static Action OnClickSound;
 
         public static Font CyrillicFont()
         {
+            if (_font != null) return _font;
+            _font = Resources.Load<Font>("UI/Font"); // свой шрифт с кириллицей, если положен
             if (_font != null) return _font;
             string[] names = { "Arial", "Segoe UI", "Roboto", "Noto Sans", "DejaVu Sans", "Liberation Sans", "Helvetica", "Verdana" };
             try { _font = Font.CreateDynamicFontFromOSFont(names, 18); } catch { _font = null; }
@@ -90,7 +94,7 @@ namespace Immortal.Presentation.UI
 
         public static Button Button(string text, Action onClick, bool enabled = true, float size = 16)
         {
-            var b = new Button(() => { if (enabled) onClick?.Invoke(); }) { text = text };
+            var b = new Button(() => { if (enabled) { OnClickSound?.Invoke(); onClick?.Invoke(); } }) { text = text };
             b.style.fontSize = size;
             b.style.color = enabled ? Text : Dim;
             b.style.backgroundColor = enabled ? new Color(0.22f, 0.2f, 0.17f) : new Color(0.15f, 0.15f, 0.15f);

@@ -212,6 +212,7 @@ namespace Immortal.Core.Action
 
         public static void UnitStrike(GameSession s, Unit u)
         {
+            s.Emit(new GameEvent { Type = GameEventType.Strike, UnitId = u.Id, Pos = u.Pos, Id = u.Behavior });
             if (u.Behavior == "ranged")
             {
                 float speed = 14f;

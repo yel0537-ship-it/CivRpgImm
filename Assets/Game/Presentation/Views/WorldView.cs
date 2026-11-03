@@ -34,7 +34,7 @@ namespace Immortal.Presentation
             public int Cx, Cy;
             public GameObject Go;
             public Mesh Mesh;
-            public Vector3[] Verts; public Color[] Colors; public Vector3[] Normals; public int[] Tris;
+            public Vector3[] Verts; public Color[] Colors; public Vector3[] Normals; public int[] Tris; public Vector2[] Layers;
             public readonly Dictionary<string, List<Matrix4x4>> Nodes = new Dictionary<string, List<Matrix4x4>>();
             public readonly Dictionary<string, List<Vector4>> NodeColors = new Dictionary<string, List<Vector4>>();
         }
@@ -154,9 +154,10 @@ namespace Immortal.Presentation
             c.Mesh.MarkDynamic();
             c.Go.AddComponent<MeshFilter>().sharedMesh = c.Mesh;
             var r = c.Go.AddComponent<MeshRenderer>();
-            r.sharedMaterial = Look.Lit;
+            r.sharedMaterial = Look.Terrain != null ? Look.Terrain : Look.Lit;
             r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             int n = _s.Balance.chunkTiles;
+            c.Layers = new Vector2[n * n * 4];
             c.Verts = new Vector3[n * n * 4]; c.Colors = new Color[n * n * 4]; c.Normals = new Vector3[n * n * 4]; c.Tris = new int[n * n * 6];
             return c;
         }
@@ -178,6 +179,8 @@ namespace Immortal.Presentation
                 var nrm = Vector3.Cross(c.Verts[v + 2] - c.Verts[v], c.Verts[v + 1] - c.Verts[v]).normalized;
                 if (nrm.y < 0) nrm = -nrm;
                 c.Normals[v] = c.Normals[v + 1] = c.Normals[v + 2] = c.Normals[v + 3] = nrm;
+                var layer = new Vector2(map.TerrainIndexAt(ty * map.Size + tx), 0);
+                c.Layers[v] = c.Layers[v + 1] = c.Layers[v + 2] = c.Layers[v + 3] = layer;
                 c.Tris[t] = v; c.Tris[t + 1] = v + 2; c.Tris[t + 2] = v + 1;
                 c.Tris[t + 3] = v + 1; c.Tris[t + 4] = v + 2; c.Tris[t + 5] = v + 3;
                 v += 4; t += 6;
@@ -187,6 +190,7 @@ namespace Immortal.Presentation
             c.Mesh.vertices = c.Verts;
             c.Mesh.normals = c.Normals;
             c.Mesh.colors = c.Colors;
+            c.Mesh.uv2 = c.Layers;
             c.Mesh.triangles = c.Tris;
             c.Mesh.RecalculateBounds();
             RebuildNodes(c);
@@ -205,7 +209,8 @@ namespace Immortal.Presentation
                 int tx = c.Cx * n + lx, ty = c.Cy * n + ly;
                 int idx = ty * map.Size + tx;
                 var td = map.TerrainAt(idx);
-                var col = Look.Hex(td.color);
+                // С текстурами цвет даёт сама текстура слоя, вершины несут лишь разброс, оттенок эпохи и туман.
+                var col = Look.Terrain != null ? Color.white : Look.Hex(td.color);
                 float j = (MathUtil.Hash01(tx, ty, 77) - 0.5f) * 0.08f;
                 col = new Color(col.r + j, col.g + j, col.b + j) * tint;
                 if (!Vision.IsExplored(_s.State, idx)) col = new Color(0.05f, 0.06f, 0.08f);
@@ -230,28 +235,12 @@ namespace Immortal.Presentation
                 var center = map.TileCenter(tx, ty);
                 float jx = (MathUtil.Hash01(tx, ty, 5) - 0.5f) * 0.8f, jy = (MathUtil.Hash01(tx, ty, 6) - 0.5f) * 0.8f;
                 var p = new Vector3(center.x + jx, GroundHeight(center), center.y + jy);
-                float s = 0.8f + MathUtil.Hash01(tx, ty, 9) * 0.5f;
-                var col = Look.Hex(node.color);
-                switch (node.shape)
-                {
-                    case "tree":
-                        AddNode(c, "trunk", Matrix4x4.TRS(p + Vector3.up * 0.9f * s, Quaternion.identity, new Vector3(0.35f, 0.9f, 0.35f) * s), new Color(0.42f, 0.3f, 0.2f));
-                        AddNode(c, "crown", Matrix4x4.TRS(p + Vector3.up * 2.3f * s, Quaternion.identity, new Vector3(1.7f, 1.9f, 1.7f) * s), col * (0.9f + jx * 0.2f));
-                        break;
-                    case "rock":
-                        AddNode(c, "rock", Matrix4x4.TRS(p + Vector3.up * 0.35f * s, Quaternion.Euler(0, jx * 90, 15 * jy), new Vector3(1.1f, 0.7f, 0.9f) * s), col);
-                        break;
-                    default:
-                        AddNode(c, "bush", Matrix4x4.TRS(p + Vector3.up * 0.35f, Quaternion.identity, new Vector3(0.9f, 0.6f, 0.9f) * s), col);
-                        break;
-                }
+                float sc = 0.8f + MathUtil.Hash01(tx, ty, 9) * 0.5f;
+                var col = Look.Hex(node.color) * (0.9f + jx * 0.2f);
+                if (!c.Nodes.TryGetValue(node.id, out var list)) { list = new List<Matrix4x4>(); c.Nodes[node.id] = list; c.NodeColors[node.id] = new List<Vector4>(); }
+                list.Add(Matrix4x4.TRS(p, Quaternion.Euler(0, MathUtil.Hash01(tx, ty, 11) * 360f, 0), Vector3.one * sc));
+                c.NodeColors[node.id].Add(col);
             }
-        }
-
-        static void AddNode(Chunk c, string type, Matrix4x4 m, Color col)
-        {
-            if (!c.Nodes.TryGetValue(type, out var l)) { l = new List<Matrix4x4>(); c.Nodes[type] = l; c.NodeColors[type] = new List<Vector4>(); }
-            l.Add(m); c.NodeColors[type].Add(col);
         }
 
         public void OnGathered(int tile)
@@ -265,31 +254,41 @@ namespace Immortal.Presentation
         readonly Vector4[] _batchColors = new Vector4[1023];
         readonly MaterialPropertyBlock _nodeMpb = new MaterialPropertyBlock();
 
+        /// <summary>Узлы рисуются инстансингом: часть модели × матрица экземпляра. Модель берётся из ViewFactory.Node.</summary>
         void DrawNodes()
         {
-            foreach (var type in new[] { "trunk", "crown", "rock", "bush" })
+            foreach (var nd in _s.Content.TerrainFile.nodes)
             {
-                var mesh = Look.Mesh(type == "trunk" ? PrimitiveType.Cylinder : type == "rock" ? PrimitiveType.Cube : PrimitiveType.Sphere);
-                int count = 0;
-                foreach (var c in _chunks.Values)
+                var visual = ViewFactory.Node(nd);
+                foreach (var part in visual.Parts)
                 {
-                    if (!c.Nodes.TryGetValue(type, out var list)) continue;
-                    var cols = c.NodeColors[type];
-                    for (int i = 0; i < list.Count; i++)
+                    int count = 0;
+                    foreach (var c in _chunks.Values)
                     {
-                        _batch[count] = list[i]; _batchColors[count] = cols[i]; count++;
-                        if (count == 1023) { Flush(mesh, count); count = 0; }
+                        if (!c.Nodes.TryGetValue(nd.id, out var list)) continue;
+                        var cols = c.NodeColors[nd.id];
+                        for (int i = 0; i < list.Count; i++)
+                        {
+                            _batch[count] = list[i] * part.Local;
+                            _batchColors[count] = part.FixedColor ?? (Color)cols[i];
+                            count++;
+                            if (count == 1023) { Flush(part, count); count = 0; }
+                        }
                     }
+                    if (count > 0) Flush(part, count);
                 }
-                if (count > 0) Flush(mesh, count);
             }
         }
 
-        void Flush(Mesh mesh, int count)
+        void Flush(NodePart part, int count)
         {
-            _nodeMpb.Clear();
-            _nodeMpb.SetVectorArray(Look.ColorId, _batchColors);
-            Graphics.DrawMeshInstanced(mesh, 0, Look.LitInstanced, _batch, count, _nodeMpb, UnityEngine.Rendering.ShadowCastingMode.Off, false);
+            if (part.UsesInstanceColor)
+            {
+                _nodeMpb.Clear();
+                _nodeMpb.SetVectorArray(Look.ColorId, _batchColors);
+                Graphics.DrawMeshInstanced(part.Mesh, 0, part.Material, _batch, count, _nodeMpb, UnityEngine.Rendering.ShadowCastingMode.Off, false);
+            }
+            else Graphics.DrawMeshInstanced(part.Mesh, 0, part.Material, _batch, count, null, UnityEngine.Rendering.ShadowCastingMode.On, true);
         }
 
         // ---------- Точки интереса ----------
@@ -310,65 +309,7 @@ namespace Immortal.Presentation
             }
         }
 
-        GameObject BuildPoi(PoiState p, PoiDef def)
-        {
-            var go = new GameObject("POI " + p.Name);
-            go.transform.SetParent(_root, false);
-            go.transform.position = Ground(p.Pos);
-            var col = Look.Hex(def.color);
-            var t = go.transform;
-            switch (def.kind)
-            {
-                case "ruins":
-                    for (int i = 0; i < 5; i++)
-                    {
-                        float a = i * 1.25f;
-                        float h = 0.8f + (i % 3) * 0.9f;
-                        Look.Prim(PrimitiveType.Cube, t, col, new Vector3(Mathf.Cos(a) * 2.2f, h * 0.5f, Mathf.Sin(a) * 2.2f), new Vector3(0.7f, h, 0.7f));
-                    }
-                    Look.Prim(PrimitiveType.Cube, t, col * 0.8f, new Vector3(0, 0.1f, 0), new Vector3(3.5f, 0.2f, 3.5f));
-                    break;
-                case "cache":
-                    Look.Prim(PrimitiveType.Cube, t, col, new Vector3(0, 0.35f, 0), new Vector3(0.9f, 0.6f, 0.6f));
-                    break;
-                case "lair":
-                    Look.Prim(PrimitiveType.Sphere, t, col, new Vector3(0, 0.2f, 0), new Vector3(4.5f, 1.6f, 4f));
-                    Look.Prim(PrimitiveType.Sphere, t, Color.black, new Vector3(0, 0.4f, -1.8f), new Vector3(1.4f, 1f, 0.6f));
-                    break;
-                case "camp":
-                case "outpost":
-                    if (def.kind == "outpost")
-                    {
-                        Look.Prim(PrimitiveType.Cube, t, col, new Vector3(0, 2.5f, 0), new Vector3(1.4f, 5f, 1.4f));
-                        Look.Prim(PrimitiveType.Cube, t, col * 1.2f, new Vector3(0, 5.2f, 0), new Vector3(2.6f, 0.4f, 2.6f));
-                    }
-                    for (int i = 0; i < 3; i++)
-                    {
-                        float a = i * 2.1f + 0.4f;
-                        Look.Prim(PrimitiveType.Cube, t, col * 0.9f, new Vector3(Mathf.Cos(a) * 3f, 0.8f, Mathf.Sin(a) * 3f), new Vector3(1.8f, 1.6f, 1.8f)).transform.localRotation = Quaternion.Euler(0, 45, 0);
-                    }
-                    Look.Prim(PrimitiveType.Cylinder, t, new Color(1f, 0.5f, 0.2f), new Vector3(0, 0.15f, 0), new Vector3(0.9f, 0.15f, 0.9f));
-                    Look.Prim(PrimitiveType.Cube, t, new Color(0.7f, 0.1f, 0.1f), new Vector3(2.2f, 2.6f, 0), new Vector3(0.1f, 0.8f, 1.1f));
-                    break;
-                case "horses":
-                    for (int i = 0; i < 3; i++)
-                        Look.Prim(PrimitiveType.Capsule, t, new Color(0.55f, 0.35f, 0.2f), new Vector3(i * 1.6f - 1.6f, 0.7f, (i % 2) * 1.2f), new Vector3(0.6f, 0.7f, 0.6f)).transform.localRotation = Quaternion.Euler(90, 20 * i, 0);
-                    break;
-                case "oddity":
-                    for (int i = 0; i < 9; i++)
-                        Look.Prim(PrimitiveType.Cube, t, col, new Vector3((i % 3 - 1) * 1.6f, 0.25f, (i / 3 - 1) * 1.6f), new Vector3(0.5f, 0.5f, 0.5f));
-                    break;
-                case "strange":
-                    Look.Prim(PrimitiveType.Cube, t, col, new Vector3(0, 1.6f, 0), new Vector3(0.6f, 3.2f, 0.6f));
-                    Look.Prim(PrimitiveType.Capsule, t, new Color(0.7f, 0.6f, 0.85f), new Vector3(1.2f, 0.9f, 0), new Vector3(0.6f, 0.9f, 0.6f));
-                    break;
-                case "grave":
-                    Look.Prim(PrimitiveType.Cube, t, col, new Vector3(0, 0.5f, 0), new Vector3(0.5f, 1f, 0.2f));
-                    Look.Prim(PrimitiveType.Cube, t, col * 0.8f, new Vector3(0, 0.05f, 0.6f), new Vector3(0.8f, 0.1f, 1.4f));
-                    break;
-            }
-            return go;
-        }
+        GameObject BuildPoi(PoiState p, PoiDef def) => ViewFactory.CreatePoi(def, _root, Ground(p.Pos));
 
         // ---------- Города ----------
         void SyncCities(Vec2 hero)
@@ -403,37 +344,7 @@ namespace Immortal.Presentation
             foreach (var b in c.Buildings)
             {
                 var d = _s.Content.Buildings[b.DefId];
-                var col = Look.Hex(d.color);
-                if (c.Hungry && d.housing > 0) col *= 0.6f; // голод виден: дома тускнеют
-                var p = Ground(b.Pos);
-                var bt = new GameObject(d.name).transform;
-                bt.SetParent(go.transform, false); bt.position = p;
-                bt.localRotation = Quaternion.Euler(0, (b.Slot * 37) % 90, 0);
-                switch (b.DefId)
-                {
-                    case "fire_pit":
-                        var fire = Look.Prim(PrimitiveType.Cylinder, bt, new Color(1f, 0.55f, 0.15f), new Vector3(0, 0.25f, 0), new Vector3(1.2f, 0.25f, 1.2f));
-                        Look.SetColor(fire.GetComponent<Renderer>(), new Color(1f, 0.55f, 0.15f), 0.8f);
-                        break;
-                    case "field":
-                        Look.Prim(PrimitiveType.Cube, bt, col, new Vector3(0, 0.08f, 0), new Vector3(d.size, 0.16f, d.size));
-                        for (int i = 0; i < 4; i++) Look.Prim(PrimitiveType.Cube, bt, col * 0.8f, new Vector3(-d.size * 0.375f + i * d.size * 0.25f, 0.2f, 0), new Vector3(0.15f, 0.12f, d.size * 0.9f));
-                        break;
-                    case "eternal_spire":
-                    case "mirror_of_sky":
-                        Look.Prim(PrimitiveType.Cylinder, bt, col * 0.8f, new Vector3(0, 0.5f, 0), new Vector3(d.size, 0.5f, d.size));
-                        var top = Look.Prim(PrimitiveType.Cylinder, bt, col, new Vector3(0, d.height * 0.5f, 0), new Vector3(d.size * 0.35f, d.height * 0.5f, d.size * 0.35f));
-                        Look.SetColor(top.GetComponent<Renderer>(), col, 0.6f);
-                        break;
-                    default:
-                        Look.Prim(PrimitiveType.Cube, bt, col, new Vector3(0, d.height * 0.4f, 0), new Vector3(d.size, d.height * 0.8f, d.size));
-                        var roof = Look.Prim(PrimitiveType.Cube, bt, Color.Lerp(col, ncol, 0.5f) * 0.85f, new Vector3(0, d.height * 0.85f, 0), new Vector3(d.size * 0.75f, d.size * 0.75f, d.size * 0.75f));
-                        roof.transform.localRotation = Quaternion.Euler(45, 0, 45);
-                        roof.transform.localScale = new Vector3(d.size * 0.6f, d.size * 0.6f, d.size * 0.6f);
-                        if (b.DefId == "palace" || b.DefId == "chief_house")
-                            Look.Prim(PrimitiveType.Cube, bt, ncol, new Vector3(d.size * 0.3f, d.height + 0.8f, 0), new Vector3(0.12f, 1.6f, 0.12f));
-                        break;
-                }
+                ViewFactory.CreateBuilding(_s, d, ncol, c.Hungry, go.transform, Ground(b.Pos), (b.Slot * 37) % 90);
             }
             // Стены у крупных городов.
             if (stage.walls || c.HasBuilding("walls") || c.HasBuilding("palisade"))
@@ -446,16 +357,21 @@ namespace Immortal.Presentation
                     if (i == 0 || i == segs / 2) continue; // ворота
                     float a = i * Mathf.PI * 2 / segs;
                     var pos = c.Pos + new Vec2(Mathf.Cos(a), Mathf.Sin(a)) * r;
-                    var w = Look.Prim(PrimitiveType.Cube, go.transform, stone ? new Color(0.62f, 0.62f, 0.6f) : new Color(0.45f, 0.32f, 0.2f), Ground(pos, 1f), new Vector3(2 * Mathf.PI * r / segs, 2f, 0.6f));
-                    w.transform.rotation = Quaternion.Euler(0, -a * Mathf.Rad2Deg + 90, 0);
+                    ViewFactory.CreateWallSegment(go.transform, stone, Ground(pos), Quaternion.Euler(0, -a * Mathf.Rad2Deg + 90, 0), 2 * Mathf.PI * r / segs);
                 }
             }
+            // Голод виден в мире: у голодного города бродят беженцы-тени.
+            if (c.Hungry && c.NationId != null)
+                for (int i = 0; i < 3; i++)
+                    Look.Prim(PrimitiveType.Capsule, go.transform, new Color(0.35f, 0.33f, 0.3f), Ground(c.Pos + new Vec2(stage.radius + 3 + i, -2 - i), 0.6f), new Vector3(0.45f, 0.6f, 0.45f));
             return go;
         }
 
         public void InvalidateCities() { foreach (var g in _cities.Values) Object.Destroy(g); _cities.Clear(); _citySig.Clear(); }
 
         // ---------- Дым ----------
+        readonly HashSet<string> _zoneFallback = new HashSet<string>();
+
         void SyncZones(Vec2 hero)
         {
             HeroInSmoke = _s.State.Hero.InSmoke;
@@ -466,24 +382,38 @@ namespace Immortal.Presentation
                 _zones.TryGetValue(z.Id, out var go);
                 if (show && go == null)
                 {
-                    go = new GameObject("Smoke " + z.Name);
-                    go.transform.SetParent(_root, false);
-                    var outer = Look.Prim(PrimitiveType.Cylinder, go.transform, new Color(0.42f, 0.33f, 0.55f, 0.55f), Vector3.zero, Vector3.one, true, "outer");
-                    var inner = Look.Prim(PrimitiveType.Cylinder, go.transform, new Color(0.3f, 0.25f, 0.4f, 0.35f), Vector3.zero, Vector3.one, true, "inner");
-                    var r = outer.GetComponent<Renderer>(); var mpb = new MaterialPropertyBlock(); r.GetPropertyBlock(mpb); mpb.SetFloat(Look.PulseId, 1f); r.SetPropertyBlock(mpb);
+                    go = ViewFactory.CreateZone(_root, out bool fb);
+                    go.name = "Smoke " + z.Name;
+                    if (fb) _zoneFallback.Add(z.Id);
                     _zones[z.Id] = go;
                 }
                 if (go == null) continue;
                 go.SetActive(show);
                 if (!show) continue;
                 go.transform.position = Ground(z.Pos);
+                bool inside = HeroInSmoke && _s.State.Hero.SmokePoiId == z.Id;
+                if (!_zoneFallback.Contains(z.Id))
+                {
+                    var m = go.transform.Find("model");
+                    if (m != null) m.localScale = Vector3.one * z.Radius;
+                    continue;
+                }
                 var o = go.transform.Find("outer"); var i = go.transform.Find("inner");
                 o.localScale = new Vector3(z.Radius * 2, 4f, z.Radius * 2); o.localPosition = new Vector3(0, 3.5f, 0);
                 i.localScale = new Vector3(z.Radius * 1.4f, 5f, z.Radius * 1.4f); i.localPosition = new Vector3(0, 5f, 0);
                 i.Rotate(0, Time.deltaTime * 6f, 0);
+                // Клубы дыма дрейфуют по кругу.
+                for (int k = 0; k < 10; k++)
+                {
+                    var puff = go.transform.Find("puff" + k);
+                    float ang = Time.time * 0.15f + k * 0.628f;
+                    float rr = z.Radius * (0.55f + 0.4f * Mathf.Sin(k * 1.7f));
+                    puff.localPosition = new Vector3(Mathf.Cos(ang) * rr, 2f + Mathf.Sin(Time.time * 0.5f + k) * 1.2f, Mathf.Sin(ang) * rr);
+                    puff.localScale = Vector3.one * (3f + (k % 3));
+                    Look.SetColor(puff.GetComponent<Renderer>(), new Color(0.5f, 0.42f, 0.62f, inside ? 0.12f : 0.3f));
+                }
                 // Изнутри дым прозрачнее — видно лишь на несколько шагов.
-                float a = HeroInSmoke && _s.State.Hero.SmokePoiId == z.Id ? 0.18f : 0.6f;
-                Look.SetColor(o.GetComponent<Renderer>(), new Color(0.42f, 0.33f, 0.55f, a));
+                Look.SetColor(o.GetComponent<Renderer>(), new Color(0.42f, 0.33f, 0.55f, inside ? 0.18f : 0.6f));
             }
         }
 

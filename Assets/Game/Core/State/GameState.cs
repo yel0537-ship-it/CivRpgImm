@@ -359,6 +359,8 @@ namespace Immortal.Core
         public string JumpReason;
         public List<string> RecentLines = new List<string>();
         public int GeneratedNameCounter;
+        /// <summary>Выполненные цели-подсказки.</summary>
+        public HashSet<string> Objectives = new HashSet<string>();
     }
 
     public sealed class ChronicleEntry

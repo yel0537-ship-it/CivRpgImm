@@ -508,7 +508,12 @@
        "next": "end"
       }
      ],
-     "speaker": "{leader}"
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "setFlag": "met_leader"
+      }
+     ]
     },
     {
      "id": "ok_na",

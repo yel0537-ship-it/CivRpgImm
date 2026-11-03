@@ -107,6 +107,7 @@ namespace Immortal.Core
             {
                 ArmySystem.TickRealtime(this, 1f);
                 ZoneSystem.TickRealtime(this, 1f);
+                ObjectiveSystem.Tick(this);
             }
 
             // Весь мир: раз в игровую неделю и месяц.

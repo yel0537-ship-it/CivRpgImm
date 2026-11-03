@@ -340,6 +340,9 @@ namespace Immortal.Core.Content
         public int itemMin = 1;
         public float attrMin, skillMin, energy, relationMin = -999, hints = -1, reputationMin = -999;
         public bool? tabooActive;
+        public bool? hasWeapon, hasHorse, governor;
+        public int companionsMin = -1, techsMin = -1;
+        public float capitalPopMin = -1;
         public bool? hasNeedItem, questDone, questStarted, rejuvenation, hasNation, atWar, leaderAlive, notTaboo, inSmoke;
         public string cityStageMin, notKnownAllTraits;
         public float chance = -1;
@@ -363,6 +366,18 @@ namespace Immortal.Core.Content
         public bool once = true;
         public float cooldownYears;
         public List<CondDef> conds = new List<CondDef>();
+    }
+
+    // ---------- objectives.json ----------
+    public sealed class ObjectivesFile { public List<ObjectiveDef> objectives = new List<ObjectiveDef>(); }
+
+    /// <summary>Цель-подсказка: показывается, пока не выполнена. done — ИЛИ из наборов условий (внутри набора — И).</summary>
+    public sealed class ObjectiveDef
+    {
+        public string id, title, text;
+        public List<CondDef> show = new List<CondDef>();
+        public List<List<CondDef>> done = new List<List<CondDef>>();
+        public int xp;
     }
 
     // ---------- chronicle.json ----------

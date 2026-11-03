@@ -1,0 +1,14 @@
+{
+  "folders": {
+    "unit": "Models/Units",
+    "building": "Models/Buildings",
+    "node": "Models/Nodes",
+    "poi": "Models/Pois",
+    "projectile": "Models/Projectiles",
+    "loot": "Models/Loot",
+    "item": "Models/Items",
+    "fx": "Fx",
+    "zone": "Fx"
+  },
+  "entries": {}
+}

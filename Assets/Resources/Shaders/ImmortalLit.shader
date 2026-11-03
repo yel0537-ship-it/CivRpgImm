@@ -25,6 +25,7 @@ Shader "Immortal/Lit"
             float4 _ImmHeroPos;
             float _ImmVision;
             float _ImmFogDark;
+            fixed4 _ImmSeason;
 
             struct appdata { float4 vertex : POSITION; float3 normal : NORMAL; fixed4 color : COLOR; UNITY_VERTEX_INPUT_INSTANCE_ID };
             struct v2f { float4 pos : SV_POSITION; fixed4 color : COLOR; float3 wpos : TEXCOORD0; float3 wn : TEXCOORD1; };
@@ -44,7 +45,8 @@ Shader "Immortal/Lit"
             {
                 float3 L = normalize(float3(0.35, 0.85, -0.4));
                 float ndl = saturate(dot(normalize(i.wn), L));
-                float3 c = i.color.rgb * (0.42 + 0.68 * ndl) + i.color.rgb * _Emission;
+                float3 season = _ImmSeason.a > 0 ? lerp(float3(1, 1, 1), _ImmSeason.rgb, 0.6) : float3(1, 1, 1);
+                float3 c = i.color.rgb * season * (0.42 + 0.68 * ndl) + i.color.rgb * _Emission;
                 float d = distance(i.wpos.xz, _ImmHeroPos.xz);
                 float outside = smoothstep(_ImmVision * 0.85, _ImmVision * 1.05, d);
                 c *= 1.0 - outside * _ImmFogDark;

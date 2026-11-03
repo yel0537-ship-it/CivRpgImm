@@ -99,6 +99,18 @@ namespace Immortal.Core.Content
                 Need(db.Dialogues.ContainsKey(ev.dialogue), $"event {ev.id}: нет диалога {ev.dialogue}");
 
             foreach (var d in db.EventsFile.dialogues) ValidateDialogue(db, d, errors);
+            var objIds = new HashSet<string>();
+            foreach (var o in db.Objectives)
+            {
+                Need(objIds.Add(o.id), $"objective {o.id}: повтор id");
+                Need(!string.IsNullOrEmpty(o.title), $"objective {o.id}: нет заголовка");
+                foreach (var set in o.done) foreach (var c in set)
+                {
+                    Need(c.minEra == null || db.Era.ContainsKey(c.minEra), $"objective {o.id}: нет эпохи {c.minEra}");
+                    Need(c.cityStageMin == null || db.StageIndex.ContainsKey(c.cityStageMin), $"objective {o.id}: нет ступени {c.cityStageMin}");
+                    Need(c.item == null || db.Items.ContainsKey(c.item), $"objective {o.id}: нет предмета {c.item}");
+                }
+            }
             return errors;
         }
 

@@ -13,7 +13,18 @@ namespace Immortal.Presentation
         static Shader _lit, _transparent;
         static readonly Dictionary<PrimitiveType, Mesh> Meshes = new Dictionary<PrimitiveType, Mesh>();
         static readonly Dictionary<string, Color> ColorCache = new Dictionary<string, Color>();
-        public static Material Lit, LitInstanced, Transparent;
+        public static Material Lit, LitInstanced, Transparent, Terrain;
+        public static readonly int SeasonId = Shader.PropertyToID("_ImmSeason");
+
+        /// <summary>Материал местности с массивом текстур. null — местность рисуется цветами вершин.</summary>
+        public static void InitTerrain(Immortal.Core.Content.ContentDatabase db)
+        {
+            var sh = Shader.Find("Immortal/Terrain");
+            if (sh == null || !SystemInfo.supports2DArrayTextures) { Terrain = null; return; }
+            Terrain = new Material(sh) { name = "Immortal Terrain" };
+            Terrain.SetTexture("_TerrainTex", TerrainTextures.Build(db));
+            Terrain.SetFloat("_Tiling", 0.25f);
+        }
 
         public static readonly int ColorId = Shader.PropertyToID("_Color");
         public static readonly int EmissionId = Shader.PropertyToID("_Emission");
@@ -105,6 +116,9 @@ namespace Immortal.Presentation
         public float Pitch = 55f;
         Vector3 _focus;
         bool _init;
+        float _shake;
+
+        public void Shake(float amount) { if (GameSettings.CameraShake) _shake = Mathf.Max(_shake, amount); }
 
         public CameraRig()
         {
@@ -127,7 +141,13 @@ namespace Immortal.Presentation
             if (!_init) { _focus = target; _init = true; }
             _focus = Vector3.Lerp(_focus, target, 1f - Mathf.Exp(-dt * 8f));
             var rot = Quaternion.Euler(Pitch, 0f, 0f);
-            Cam.transform.position = _focus + rot * new Vector3(0, 0, -Distance);
+            Vector3 jitter = Vector3.zero;
+            if (_shake > 0.001f)
+            {
+                jitter = new Vector3(Mathf.PerlinNoise(Time.time * 40f, 0) - 0.5f, Mathf.PerlinNoise(0, Time.time * 40f) - 0.5f, 0) * _shake;
+                _shake = Mathf.MoveTowards(_shake, 0, dt * 3f);
+            }
+            Cam.transform.position = _focus + rot * new Vector3(0, 0, -Distance) + jitter;
             Cam.transform.rotation = rot;
         }
 

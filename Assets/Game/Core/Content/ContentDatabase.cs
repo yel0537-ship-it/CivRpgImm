@@ -10,7 +10,7 @@ namespace Immortal.Core.Content
         public static readonly string[] FileNames =
         {
             "balance", "terrain", "regions", "points_of_interest", "eras", "tech", "items", "recruits",
-            "enemies", "abilities", "buildings", "settlement_stages", "nations", "events", "chronicle", "simulation_hints"
+            "enemies", "abilities", "buildings", "settlement_stages", "nations", "events", "chronicle", "simulation_hints", "objectives"
         };
 
         public BalanceDef Balance;
@@ -29,6 +29,7 @@ namespace Immortal.Core.Content
         public EventsFile EventsFile;
         public ChronicleFile ChronicleFile;
         public HintsFile Hints;
+        public List<ObjectiveDef> Objectives;
 
         public readonly Dictionary<string, TerrainDef> Terrain = new Dictionary<string, TerrainDef>();
         public readonly List<TerrainDef> TerrainByIndex = new List<TerrainDef>();
@@ -79,6 +80,7 @@ namespace Immortal.Core.Content
             db.EventsFile = Read<EventsFile>("events");
             db.ChronicleFile = Read<ChronicleFile>("chronicle");
             db.Hints = Read<HintsFile>("simulation_hints");
+            db.Objectives = Read<ObjectivesFile>("objectives").objectives;
             db.Index();
             return db;
         }

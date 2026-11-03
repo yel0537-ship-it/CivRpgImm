@@ -320,6 +320,17 @@ namespace Immortal.Core.Narrative
                 var cap = s.Capital(s.PlayerNation);
                 if (cap == null || cap.StageIndex < s.Content.StageIndex[c.cityStageMin]) return false;
             }
+            if (c.hasWeapon.HasValue && (h.WeaponId != null) != c.hasWeapon.Value) return false;
+            if (c.hasHorse.HasValue && h.HasHorse != c.hasHorse.Value) return false;
+            if (c.companionsMin >= 0) { int alive = 0; foreach (var cc in st.Companions) if (cc.Alive) alive++; if (alive < c.companionsMin) return false; }
+            if (c.techsMin >= 0 && (s.PlayerNation == null || s.PlayerNation.Researched.Count < c.techsMin)) return false;
+            if (c.capitalPopMin >= 0) { var cap = s.Capital(s.PlayerNation); if (cap == null || cap.Population < c.capitalPopMin) return false; }
+            if (c.governor.HasValue)
+            {
+                bool any = false;
+                foreach (var cc in st.Cities) if (cc.NationId == st.PlayerNationId && cc.GovernorId != null) any = true;
+                if (any != c.governor.Value) return false;
+            }
             if (c.chance >= 0 && !s.Rng.Chance(c.chance)) return false;
             return true;
         }

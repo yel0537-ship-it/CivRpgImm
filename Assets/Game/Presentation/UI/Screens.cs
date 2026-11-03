@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 
 namespace Immortal.Presentation.UI
 {
-    public enum Screen { Menu, World, Map, Ruler, Dialogue, Chronicle, End, Inventory, Craft, Interior }
+    public enum Screen { Menu, World, Map, Ruler, Dialogue, Chronicle, End, Inventory, Craft, Interior, Settings }
 
     /// <summary>То, что экраны просят у корня игры.</summary>
     public interface IGameShell
@@ -34,7 +34,7 @@ namespace Immortal.Presentation.UI
         readonly IGameShell _g;
         public readonly VisualElement Root;
         readonly Dictionary<Screen, VisualElement> _layers = new Dictionary<Screen, VisualElement>();
-        readonly VisualElement _dialogueBox, _menuBox, _endBox, _chronicleBox, _mapBox, _rulerBox, _invBox, _craftBox, _interiorBox;
+        readonly VisualElement _dialogueBox, _menuBox, _endBox, _chronicleBox, _mapBox, _rulerBox, _invBox, _craftBox, _interiorBox, _settingsBox;
         string _dialogueKey;
         public string RulerTab = "city";
         public string RulerCityId;
@@ -57,6 +57,7 @@ namespace Immortal.Presentation.UI
             _invBox = Layer(Screen.Inventory, new Color(0, 0, 0, 0.55f));
             _craftBox = Layer(Screen.Craft, new Color(0, 0, 0, 0.55f));
             _interiorBox = Layer(Screen.Interior, new Color(0, 0, 0, 0.55f));
+            _settingsBox = Layer(Screen.Settings, new Color(0.03f, 0.03f, 0.05f, 0.96f));
         }
 
         VisualElement Layer(Screen s, Color bg)
@@ -85,6 +86,7 @@ namespace Immortal.Presentation.UI
                 case Screen.Inventory: BuildInventory(); break;
                 case Screen.Craft: BuildCraft(); break;
                 case Screen.Interior: BuildInterior(); break;
+                case Screen.Settings: BuildSettings(); break;
                 case Screen.Dialogue: _dialogueKey = null; RefreshDialogue(); break;
             }
         }
@@ -123,6 +125,7 @@ namespace Immortal.Presentation.UI
                 if (slot != "auto" && _g.Session != null && !_g.Session.State.GameOver) row.Add(Ui.Button("Сохранить сюда", () => { _g.Save(slot); BuildMenu(); }));
                 b.Add(row);
             }
+            b.Add(Ui.Button("Настройки", () => _g.SetScreen(Screen.Settings)));
             b.Add(Ui.Button("Выход", () => _g.Quit()));
             b.Add(Ui.Label("F5 — быстрое сохранение, F9 — быстрая загрузка (слот 1).", 13, Ui.Dim));
         }
@@ -242,7 +245,7 @@ namespace Immortal.Presentation.UI
             var holder = new VisualElement(); holder.style.width = 768; holder.style.height = 768;
             var img = new Image { image = _mapTex, scaleMode = ScaleMode.StretchToFill };
             img.style.width = 768; img.style.height = 768;
-            img.style.scale = new Scale(new Vector3(1, -1, 1)); // y мира вверх
+            // Строка 0 текстуры — юг мира: Image рисует её внизу, так что север сверху без переворота.
             holder.Add(img);
             float k = 768f / (size * s.Map.TileSize);
             foreach (var c in s.State.Cities)
@@ -595,6 +598,34 @@ namespace Immortal.Presentation.UI
                 sv.Add(row);
             }
             b.Add(Ui.Button("Закрыть (C)", () => _g.SetScreen(Screen.World)));
+        }
+
+        // ---------- Настройки ----------
+        void BuildSettings()
+        {
+            var b = _settingsBox; b.Clear();
+            b.style.width = 620;
+            b.Add(Title("Настройки"));
+            void Volume(string name, System.Func<float> get, System.Action<float> set)
+            {
+                var row = Ui.Row();
+                var l = Ui.Label($"{name}: {get() * 100:0}%", 17); l.style.width = 300; row.Add(l);
+                row.Add(Ui.Button("−", () => { set(get() - 0.1f); BuildSettings(); }));
+                row.Add(Ui.Button("+", () => { set(get() + 0.1f); BuildSettings(); }));
+                b.Add(row);
+            }
+            void Toggle(string name, System.Func<bool> get, System.Action<bool> set)
+            {
+                b.Add(Ui.Button($"{name}: {(get() ? "вкл" : "выкл")}", () => { set(!get()); BuildSettings(); }));
+            }
+            Volume("Общая громкость", () => GameSettings.Master, v => GameSettings.Master = v);
+            Volume("Музыка", () => GameSettings.Music, v => GameSettings.Music = v);
+            Volume("Эффекты", () => GameSettings.Sfx, v => GameSettings.Sfx = v);
+            Toggle("Числа урона", () => GameSettings.DamageNumbers, v => GameSettings.DamageNumbers = v);
+            Toggle("Тряска камеры", () => GameSettings.CameraShake, v => GameSettings.CameraShake = v);
+            Toggle("Звуки-заглушки, если нет файлов", () => GameSettings.SynthAudio, v => GameSettings.SynthAudio = v);
+            b.Add(Ui.Label("Свои звуки, музыку, модели и текстуры можно положить в Resources — см. docs/ASSETS.md.", 14, Ui.Dim));
+            b.Add(Ui.Button("Назад", () => { PlayerPrefs.Save(); _g.SetScreen(_g.Session != null && !_g.Session.State.GameOver ? Screen.Menu : Screen.Menu); }));
         }
 
         // ---------- Интерьер постройки ----------

@@ -5,7 +5,10 @@ namespace Immortal.Core
         Hit, Death, Pickup, Message, AbilityCast, DialogueStarted, DialogueEnded, ChronicleOpened,
         EraChanged, StageChanged, BuildingBuilt, CityFounded, CityCaptured, Ending, Rejuvenated, Gathered,
         WorldChanged, TimeJumped, HeroDefeated, Discovered, Recruited, CompanionDied, TechResearched,
-        BattleStarted, ZoneEntered, ZoneExited, Autosave, LevelUp, Crafted, OpenScreen
+        BattleStarted, ZoneEntered, ZoneExited, Autosave, LevelUp, Crafted, OpenScreen,
+        /// <summary>Юнит наносит удар (конец замаха) — для анимаций и звука.</summary>
+        Strike,
+        ObjectiveCompleted, WindupStarted
     }
 
     /// <summary>Одноразовое событие. Presentation считывает очередь после тика.</summary>

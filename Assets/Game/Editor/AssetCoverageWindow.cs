@@ -28,6 +28,11 @@ namespace Immortal.EditorTools
             _rows = new List<(AssetSlot, bool, string)>();
             foreach (var s in AssetKeys.Visuals(db))
             {
+                if (s.Category == "interior")
+                {
+                    _rows.Add((s, Resources.Load<GameObject>("Interiors/" + s.Id) != null, "Interiors/" + s.Id));
+                    continue;
+                }
                 var e = VisualCatalog.Resolve(s.Category, s.Id);
                 _rows.Add((s, e != null, e?.prefab ?? DefaultFolder(s.Category) + "/" + s.Id));
             }

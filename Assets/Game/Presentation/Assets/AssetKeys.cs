@@ -50,6 +50,8 @@ namespace Immortal.Presentation
                 if (a.radius > 0 && (a.type == "projectile" || a.type == "area")) list.Add(new AssetSlot("fx", "explosion_" + a.id, a.name + " — взрыв"));
             }
             foreach (var f in FxKeys) list.Add(new AssetSlot(f == "smoke_zone" ? "zone" : "fx", f, "эффект"));
+            foreach (var b in db.BuildingList) if (b.interior || b.service == "ruler") list.Add(new AssetSlot("interior", b.id, "интерьер: " + b.name + " (Resources/Interiors)"));
+            list.Add(new AssetSlot("interior", "default", "интерьер по умолчанию"));
             return list;
         }
 

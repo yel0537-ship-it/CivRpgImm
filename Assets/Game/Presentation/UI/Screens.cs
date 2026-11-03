@@ -39,6 +39,8 @@ namespace Immortal.Presentation.UI
         public string RulerTab = "city";
         public string RulerCityId;
         public string InteriorText;
+        /// <summary>Картинка интерьера (RenderTexture диорамы), если есть.</summary>
+        public Texture InteriorImage;
         public bool WorkshopMode;
         /// <summary>Вызывается при смене масштаба интерфейса в настройках.</summary>
         public static Action UiScaleChanged;
@@ -782,7 +784,14 @@ namespace Immortal.Presentation.UI
         {
             var b = _interiorBox; b.Clear();
             b.style.width = 760;
+            b.style.width = 1000;
             b.Add(Title("Внутри"));
+            if (InteriorImage != null)
+            {
+                var img = new Image { image = InteriorImage, scaleMode = ScaleMode.ScaleToFit };
+                img.style.width = 960; img.style.height = 540; img.style.marginBottom = 8;
+                b.Add(img);
+            }
             b.Add(Ui.Label(InteriorText ?? "", 17));
             b.Add(Ui.Button("Выйти", () => _g.SetScreen(Screen.World)));
         }

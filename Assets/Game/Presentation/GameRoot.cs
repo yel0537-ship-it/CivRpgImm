@@ -26,6 +26,7 @@ namespace Immortal.Presentation
         UnitViews _units;
         Markers _markers;
         Ambience _ambience;
+        InteriorStage _interior;
         UIDocument _doc;
         Hud _hud;
         Screens _screens;
@@ -69,6 +70,7 @@ namespace Immortal.Presentation
             _units = new UnitViews(transform, _world);
             _markers = new Markers(transform, _world);
             _ambience = new Ambience(transform, _world);
+            _interior = new InteriorStage(transform);
             _ambience.Say = (t, text) => { if (text != null && t != null) { _hud.Bubble(t, text); _audio.Play("dialogue", t.position, 0.4f); } };
             _ambience.UnitAnchor = id => _units.UnitTransform(id);
             CreateEventSystem();
@@ -139,6 +141,7 @@ namespace Immortal.Presentation
 
         public void SetScreen(UiScreen s)
         {
+            if (Current == UiScreen.Interior && s != UiScreen.Interior) { _interior.Hide(); _screens.InteriorImage = null; }
             if (s != Current && (s == UiScreen.Map || s == UiScreen.Ruler || s == UiScreen.Inventory || s == UiScreen.Craft || s == UiScreen.Interior))
                 _audio?.Play("ui_open");
             Current = s;
@@ -249,6 +252,7 @@ namespace Immortal.Presentation
             UpdateLabels(heroPos);
             _hud.Update(Session, _doc.rootVisualElement.panel, _cam.Cam, dt);
             _hud.UpdateFade(Time.unscaledDeltaTime);
+            if (Current == UiScreen.Interior) _interior.Update(dt);
         }
 
         /// <summary>Времена года видны в мире: зимой холоднее и светлее, осенью — рыжее.</summary>
@@ -497,6 +501,7 @@ namespace Immortal.Presentation
                     {
                         var city = Session.City(parts.Length > 1 ? parts[1] : null);
                         _screens.InteriorText = $"{d.name} — {city?.Name}\n\n{d.description}\n\n" + InteriorServices(d.id);
+                        _screens.InteriorImage = _interior.Show(Session, d.id, city?.Id);
                         SetScreen(UiScreen.Interior);
                     }
                     break;

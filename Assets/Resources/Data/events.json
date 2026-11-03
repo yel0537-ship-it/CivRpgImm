@@ -2055,6 +2055,260 @@
      "speaker": "Гонец"
     }
    ]
+  },
+  {
+   "id": "dlg_leader_visit",
+   "title": "dlg_leader_visit",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "{leader_title} {leader} сам прибыл ко двору {capital} с малой свитой. Бессмертные редко покидают свои столицы.",
+     "options": [
+      {
+       "text": "Принять как равного",
+       "next": "end",
+       "effects": [
+        {
+         "startDialogue": "dlg_leader"
+        }
+       ]
+      },
+      {
+       "text": "Схватить гостя",
+       "next": "end",
+       "effects": [
+        {
+         "captureLeader": true
+        },
+        {
+         "rep": -20
+        },
+        {
+         "chronicle": "Год {year}. {hero} схватил гостя — правителя {nation}. Мир этого не забудет."
+        }
+       ]
+      },
+      {
+       "text": "Отказать в приёме",
+       "next": "end",
+       "effects": [
+        {
+         "attitude": -6
+        }
+       ]
+      }
+     ],
+     "speaker": "Двор"
+    }
+   ]
+  },
+  {
+   "id": "dlg_court",
+   "title": "dlg_court",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Царский суд. {companion} обвиняют в том, что он присвоил зерно из амбаров {city}. Свидетели путаются.",
+     "options": [
+      {
+       "text": "Оправдать друга",
+       "next": "end",
+       "effects": [
+        {
+         "relation": 10
+        },
+        {
+         "allLoyalty": -4
+        },
+        {
+         "rep": -2
+        }
+       ]
+      },
+      {
+       "text": "Наказать по закону",
+       "next": "end",
+       "effects": [
+        {
+         "relation": -20
+        },
+        {
+         "allLoyalty": 4
+        },
+        {
+         "rep": 3
+        }
+       ]
+      },
+      {
+       "text": "Разобраться самому",
+       "check": {
+        "kind": "attr",
+        "attr": "mind",
+        "difficulty": 0.5,
+        "full": "truth",
+        "partial": "truth",
+        "fail": "muddle",
+        "crit": "muddle"
+       }
+      }
+     ],
+     "speaker": "Суд"
+    },
+    {
+     "id": "truth",
+     "text": "Зерно украл писец, а {companion} его покрывал. Вы наказываете виновного и прощаете друга.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "relation": 5
+      },
+      {
+       "allLoyalty": 3
+      },
+      {
+       "xp": 20
+      }
+     ]
+    },
+    {
+     "id": "muddle",
+     "text": "Правды так и не нашли. Люди шепчутся, что царь судит своих мягче.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "allLoyalty": -3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_prophet",
+   "title": "dlg_prophet",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "На площади {city} проповедует пророк: «Дым — это дыхание того, кто видит нас во сне. Он проснётся, и нас не станет».",
+     "options": [
+      {
+       "text": "Выслушать до конца",
+       "next": "sermon"
+      },
+      {
+       "text": "Изгнать смутьяна",
+       "next": "end",
+       "effects": [
+        {
+         "allLoyalty": 2
+        }
+       ]
+      },
+      {
+       "text": "Взять ко двору учёным",
+       "next": "end",
+       "effects": [
+        {
+         "science": 30
+        },
+        {
+         "hint": "prophet"
+        }
+       ]
+      }
+     ],
+     "speaker": "Пророк"
+    },
+    {
+     "id": "sermon",
+     "text": "«Ты тоже не стареешь, правитель. Знаешь почему? Тебя забыли выключить». Толпа смеётся. Вам не смешно.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "hint": "prophet"
+      },
+      {
+       "memory": "prophet_words"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_gifts",
+   "title": "dlg_gifts",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Караван из {nation} привёз дары: ткани, бронзу и письмо. «В знак дружбы — и в надежде на неё».",
+     "options": [
+      {
+       "text": "Принять дары и ответить тем же (20 еды)",
+       "next": "end",
+       "conds": [
+        {
+         "item": "food",
+         "itemMin": 20
+        }
+       ],
+       "effects": [
+        {
+         "item": "food",
+         "amount": -20
+        },
+        {
+         "item": "bronze",
+         "amount": 10
+        },
+        {
+         "attitude": 12
+        }
+       ]
+      },
+      {
+       "text": "Принять дары молча",
+       "next": "end",
+       "effects": [
+        {
+         "item": "bronze",
+         "amount": 10
+        },
+        {
+         "attitude": 2
+        }
+       ]
+      },
+      {
+       "text": "Вернуть дары",
+       "next": "end",
+       "effects": [
+        {
+         "attitude": -8
+        },
+        {
+         "rep": 1
+        }
+       ]
+      }
+     ],
+     "speaker": "Караван"
+    }
+   ]
   }
  ],
  "events": [
@@ -2322,6 +2576,61 @@
     {
      "hasNation": true,
      "cityStageMin": "village"
+    }
+   ]
+  },
+  {
+   "id": "ev_leader_visit",
+   "trigger": "monthly",
+   "dialogue": "dlg_leader_visit",
+   "chance": 0.012,
+   "once": false,
+   "cooldownYears": 15,
+   "conds": [
+    {
+     "minEra": "city_states",
+     "atWar": false,
+     "leaderAlive": true
+    }
+   ]
+  },
+  {
+   "id": "ev_court",
+   "trigger": "monthly",
+   "dialogue": "dlg_court",
+   "chance": 0.02,
+   "once": false,
+   "cooldownYears": 10,
+   "conds": [
+    {
+     "minEra": "ancient_kingdoms",
+     "companionsMin": 1
+    }
+   ]
+  },
+  {
+   "id": "ev_prophet",
+   "trigger": "monthly",
+   "dialogue": "dlg_prophet",
+   "chance": 0.015,
+   "once": true,
+   "conds": [
+    {
+     "minEra": "city_states"
+    }
+   ]
+  },
+  {
+   "id": "ev_gifts",
+   "trigger": "monthly",
+   "dialogue": "dlg_gifts",
+   "chance": 0.015,
+   "once": false,
+   "cooldownYears": 12,
+   "conds": [
+    {
+     "minEra": "city_states",
+     "atWar": false
     }
    ]
   }

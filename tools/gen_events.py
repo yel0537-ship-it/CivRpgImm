@@ -187,5 +187,31 @@ ev("ev_grudge","after_jump","dlg_grudge",chance=0.8,conds=[{"flag":"refused_dyin
 ev("ev_legend","after_jump","dlg_legend",conds=[{"flag":"legend_of_return","hasNation":True}])
 ev("ev_star","monthly","dlg_star",chance=0.02,conds=[{"minEra":"city_states"}])
 ev("ev_raid_warning","monthly","dlg_raid_warning",chance=0.02,once=False,cooldown=8,conds=[{"hasNation":True,"cityStageMin":"village"}])
+
+# ---------- Поздние эпохи: двор, суд, пророки ----------
+dlg("dlg_leader_visit",[node("start","{leader_title} {leader} сам прибыл ко двору {capital} с малой свитой. Бессмертные редко покидают свои столицы.",[
+  opt("Принять как равного",effects=[{"startDialogue":"dlg_leader"}]),
+  opt("Схватить гостя",effects=[{"captureLeader":True},{"rep":-20},{"chronicle":"Год {year}. {hero} схватил гостя — правителя {nation}. Мир этого не забудет."}]),
+  opt("Отказать в приёме",effects=[{"attitude":-6}])],speaker="Двор")])
+dlg("dlg_court",[node("start","Царский суд. {companion} обвиняют в том, что он присвоил зерно из амбаров {city}. Свидетели путаются.",[
+  opt("Оправдать друга",effects=[{"relation":10},{"allLoyalty":-4},{"rep":-2}]),
+  opt("Наказать по закону",effects=[{"relation":-20},{"allLoyalty":4},{"rep":3}]),
+  opt("Разобраться самому",check={"kind":"attr","attr":"mind","difficulty":0.5,"full":"truth","partial":"truth","fail":"muddle","crit":"muddle"})],speaker="Суд"),
+  node("truth","Зерно украл писец, а {companion} его покрывал. Вы наказываете виновного и прощаете друга.",[opt("…")],effects=[{"relation":5},{"allLoyalty":3},{"xp":20}]),
+  node("muddle","Правды так и не нашли. Люди шепчутся, что царь судит своих мягче.",[opt("…")],effects=[{"allLoyalty":-3}])])
+dlg("dlg_prophet",[node("start","На площади {city} проповедует пророк: «Дым — это дыхание того, кто видит нас во сне. Он проснётся, и нас не станет».",[
+  opt("Выслушать до конца",next="sermon"),
+  opt("Изгнать смутьяна",effects=[{"allLoyalty":2}]),
+  opt("Взять ко двору учёным",effects=[{"science":30},{"hint":"prophet"}])],speaker="Пророк"),
+  node("sermon","«Ты тоже не стареешь, правитель. Знаешь почему? Тебя забыли выключить». Толпа смеётся. Вам не смешно.",[opt("…")],effects=[{"hint":"prophet"},{"memory":"prophet_words"}])])
+dlg("dlg_gifts",[node("start","Караван из {nation} привёз дары: ткани, бронзу и письмо. «В знак дружбы — и в надежде на неё».",[
+  opt("Принять дары и ответить тем же (20 еды)",conds=[{"item":"food","itemMin":20}],effects=[{"item":"food","amount":-20},{"item":"bronze","amount":10},{"attitude":12}]),
+  opt("Принять дары молча",effects=[{"item":"bronze","amount":10},{"attitude":2}]),
+  opt("Вернуть дары",effects=[{"attitude":-8},{"rep":1}])],speaker="Караван")])
+
+ev("ev_leader_visit","monthly","dlg_leader_visit",chance=0.012,once=False,cooldown=15,conds=[{"minEra":"city_states","atWar":False,"leaderAlive":True}])
+ev("ev_court","monthly","dlg_court",chance=0.02,once=False,cooldown=10,conds=[{"minEra":"ancient_kingdoms","companionsMin":1}])
+ev("ev_prophet","monthly","dlg_prophet",chance=0.015,conds=[{"minEra":"city_states"}])
+ev("ev_gifts","monthly","dlg_gifts",chance=0.015,once=False,cooldown=12,conds=[{"minEra":"city_states","atWar":False}])
 json.dump({"dialogues":D,"events":E},open(sys.argv[1],"w",encoding="utf-8"),ensure_ascii=False,indent=1)
 print(len(D),"dialogues",len(E),"events")

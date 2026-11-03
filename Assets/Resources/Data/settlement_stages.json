@@ -1,0 +1,98 @@
+{
+ "stages": [
+  {
+   "id": "camp",
+   "name": "Стоянка",
+   "minPop": 0,
+   "radius": 6,
+   "influenceRadius": 18,
+   "slots": 10,
+   "maxPop": 12
+  },
+  {
+   "id": "village",
+   "name": "Деревня",
+   "minPop": 5,
+   "requiredBuildings": [
+    "hut",
+    "field"
+   ],
+   "role": "chief",
+   "radius": 9,
+   "influenceRadius": 26,
+   "slots": 14,
+   "maxPop": 24
+  },
+  {
+   "id": "hamlet",
+   "name": "Посёлок",
+   "minPop": 14,
+   "requiredBuildings": [
+    "storage",
+    "workshop"
+   ],
+   "radius": 12,
+   "influenceRadius": 32,
+   "slots": 20,
+   "maxPop": 40
+  },
+  {
+   "id": "city_state",
+   "name": "Город-государство",
+   "minPop": 24,
+   "requiredBuildings": [
+    "chief_house",
+    "settlement_center"
+   ],
+   "cost": {
+    "wood": 40,
+    "stone": 40
+   },
+   "unlocksEra": "city_states",
+   "radius": 15,
+   "influenceRadius": 40,
+   "slots": 28,
+   "maxPop": 70
+  },
+  {
+   "id": "town",
+   "name": "Город",
+   "minPop": 40,
+   "requiredBuildings": [
+    "house",
+    "granary"
+   ],
+   "radius": 18,
+   "influenceRadius": 46,
+   "slots": 36,
+   "maxPop": 110
+  },
+  {
+   "id": "large_city",
+   "name": "Большой город",
+   "minPop": 60,
+   "requiredBuildings": [
+    "market",
+    "school"
+   ],
+   "radius": 21,
+   "influenceRadius": 52,
+   "slots": 44,
+   "maxPop": 160
+  },
+  {
+   "id": "royal_capital",
+   "name": "Столица царства",
+   "minPop": 80,
+   "requiredBuildings": [
+    "palace"
+   ],
+   "unlocksEra": "ancient_kingdoms",
+   "radius": 24,
+   "influenceRadius": 60,
+   "slots": 54,
+   "walls": true,
+   "maxPop": 260
+  }
+ ]
+}

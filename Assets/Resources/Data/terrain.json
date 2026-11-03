@@ -1,0 +1,30 @@
+{
+  "terrains": [
+    { "id": "grass", "name": "Луга", "color": "#6FA34A", "moveCost": 1.0, "height": 0.0, "fertile": true,
+      "nodes": [ { "node": "tree", "chance": 0.035 }, { "node": "berry_bush", "chance": 0.03 }, { "node": "stone", "chance": 0.012 }, { "node": "flax", "chance": 0.02 } ] },
+    { "id": "forest", "name": "Лес", "color": "#3E7A3A", "moveCost": 1.25, "height": 0.2, "fertile": true,
+      "nodes": [ { "node": "tree", "chance": 0.3 }, { "node": "berry_bush", "chance": 0.04 }, { "node": "flax", "chance": 0.01 } ] },
+    { "id": "steppe", "name": "Степь", "color": "#B8B062", "moveCost": 0.95, "height": 0.0, "fertile": true,
+      "nodes": [ { "node": "berry_bush", "chance": 0.015 }, { "node": "stone", "chance": 0.02 }, { "node": "flax", "chance": 0.03 } ] },
+    { "id": "sand", "name": "Пески", "color": "#D8BE7A", "moveCost": 1.2, "height": 0.1,
+      "nodes": [ { "node": "stone", "chance": 0.03 }, { "node": "ore", "chance": 0.012 } ] },
+    { "id": "swamp", "name": "Топь", "color": "#4F6B4A", "moveCost": 1.7, "height": -0.2,
+      "nodes": [ { "node": "reeds", "chance": 0.09 }, { "node": "tree", "chance": 0.04 } ] },
+    { "id": "snow", "name": "Снега", "color": "#DDE6EA", "moveCost": 1.25, "height": 0.4,
+      "nodes": [ { "node": "stone", "chance": 0.03 }, { "node": "ore", "chance": 0.015 }, { "node": "tree", "chance": 0.03 } ] },
+    { "id": "hills", "name": "Холмы", "color": "#8C8458", "moveCost": 1.3, "height": 1.0,
+      "nodes": [ { "node": "stone", "chance": 0.07 }, { "node": "ore", "chance": 0.035 }, { "node": "tree", "chance": 0.02 } ] },
+    { "id": "water", "name": "Вода", "color": "#3B6EA5", "walkable": false, "height": -0.6 },
+    { "id": "mountain", "name": "Скалы", "color": "#7D7A78", "walkable": false, "height": 3.2 },
+    { "id": "field", "name": "Поля", "color": "#C9B04B", "moveCost": 1.0, "height": 0.0 },
+    { "id": "road", "name": "Дорога", "color": "#9C8466", "moveCost": 0.7, "height": 0.0 }
+  ],
+  "nodes": [
+    { "id": "tree", "name": "Дерево", "color": "#2F5E2A", "shape": "tree", "yields": { "wood": 3 }, "regrowMonths": 24 },
+    { "id": "berry_bush", "name": "Ягодный куст", "color": "#B03A48", "shape": "bush", "yields": { "berries": 3 }, "regrowMonths": 6 },
+    { "id": "flax", "name": "Дикий лён", "color": "#9DB8D9", "shape": "bush", "yields": { "fiber": 2 }, "regrowMonths": 8 },
+    { "id": "reeds", "name": "Камыш", "color": "#7F8F4A", "shape": "bush", "yields": { "fiber": 3 }, "regrowMonths": 6 },
+    { "id": "stone", "name": "Валун", "color": "#8E8E8E", "shape": "rock", "yields": { "stone": 3 }, "regrowMonths": 120 },
+    { "id": "ore", "name": "Рудная жила", "color": "#B4693A", "shape": "rock", "yields": { "ore": 2 }, "regrowMonths": -1 }
+  ]
+}

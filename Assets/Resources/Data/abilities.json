@@ -1,0 +1,27 @@
+{
+  "abilities": [
+    { "id": "punch", "name": "Удар кулаком", "type": "arc", "damage": 4, "range": 1.4, "arc": 70, "cooldown": 0.6, "color": "#FFFFFF" },
+    { "id": "stone_throw", "name": "Бросок камня", "type": "projectile", "damage": 9, "range": 14, "speed": 20, "cooldown": 2, "energy": 4, "color": "#BBBBBB",
+      "description": "Камень летит в сторону курсора." },
+    { "id": "war_cry", "name": "Боевой клич", "type": "buff", "buffStat": "damage", "buffValue": 0.35, "duration": 8, "cooldown": 18, "energy": 12, "radius": 4, "color": "#FFB74D",
+      "description": "+35% урона на 8 секунд." },
+    { "id": "club_hit", "name": "Удар дубиной", "type": "arc", "damage": 6, "range": 1.7, "arc": 80, "cooldown": 0.7, "color": "#E0C090" },
+    { "id": "club_smash", "name": "Сокрушение", "type": "arc", "damage": 16, "range": 2.3, "arc": 150, "cooldown": 4, "energy": 10, "color": "#FFA040",
+      "description": "Широкий удар по дуге." },
+    { "id": "spear_thrust", "name": "Выпад копьём", "type": "arc", "damage": 7, "range": 2.6, "arc": 40, "cooldown": 0.75, "color": "#E0E0C0" },
+    { "id": "spear_lunge", "name": "Бросок вперёд", "type": "dash", "damage": 14, "range": 6, "radius": 1.6, "cooldown": 5, "energy": 12, "color": "#FFE082",
+      "description": "Рывок с ударом в конце." },
+    { "id": "spear_sweep", "name": "Размашистый взмах", "type": "arc", "damage": 11, "range": 2.7, "arc": 200, "cooldown": 5, "energy": 10, "color": "#FFD54F" },
+    { "id": "sling_shot", "name": "Выстрел из пращи", "type": "projectile", "damage": 6, "range": 16, "speed": 24, "cooldown": 0.8, "color": "#CCCCCC" },
+    { "id": "sling_volley", "name": "Град камней", "type": "projectile", "damage": 7, "count": 4, "range": 15, "speed": 22, "cooldown": 5, "energy": 12, "color": "#BBBBBB" },
+    { "id": "dust_cloud", "name": "Пыльная буря", "type": "area", "damage": 6, "radius": 3.5, "count": 3, "windup": 0.3, "range": 10, "cooldown": 9, "energy": 14, "color": "#C8B58A" },
+    { "id": "sword_slash", "name": "Рубящий удар", "type": "arc", "damage": 9, "range": 1.9, "arc": 100, "cooldown": 0.65, "color": "#F0F0F0" },
+    { "id": "whirlwind", "name": "Вихрь клинка", "type": "arc", "damage": 18, "range": 2.6, "arc": 360, "cooldown": 6, "energy": 16, "color": "#90CAF9" },
+    { "id": "shield_bash", "name": "Таран", "type": "dash", "damage": 12, "range": 4, "radius": 1.4, "cooldown": 5, "energy": 10, "color": "#B0BEC5" },
+    { "id": "battle_focus", "name": "Боевое сосредоточение", "type": "buff", "buffStat": "damage", "buffValue": 0.5, "duration": 6, "cooldown": 20, "energy": 15, "color": "#EF9A9A" },
+    { "id": "power_fireball", "name": "Огненный шар", "type": "projectile", "scaling": "mind", "damage": 28, "radius": 3, "range": 18, "speed": 16, "cooldown": 2.5,
+      "energy": 10, "requiresSmoke": true, "mystic": true, "color": "#FF7043", "description": "Сила эпохи городов-государств. Только в дыму." },
+    { "id": "power_stone_rain", "name": "Каменный дождь", "type": "area", "scaling": "mind", "damage": 22, "radius": 6, "count": 6, "windup": 0.6, "range": 16,
+      "cooldown": 8, "energy": 20, "requiresSmoke": true, "mystic": true, "color": "#A1887F", "description": "Сила эпохи царств. Только в дыму." }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "eras": [
+    { "id": "primitive", "name": "Первобытная эпоха", "order": 0, "implemented": true, "superpower": null, "superpowerName": null,
+      "smokeEntities": ["shade_beast", "smoke_wisp"], "itemQuality": "settlement", "tint": "#FFFFFF",
+      "chapterTitle": "Глава I. Изгой", "chapterText": "У вас нет ничего, кроме рук и упрямства." },
+    { "id": "city_states", "name": "Эпоха городов-государств", "order": 1, "implemented": true,
+      "superpower": "power_fireball", "superpowerName": "огненный шар", "smokeEntities": ["smoke_wisp", "ember_spirit"],
+      "itemQuality": "copper", "requiresStage": "city_state", "requiresTechs": 3, "tint": "#FFF3E0",
+      "chapterTitle": "Глава II. Вождь", "chapterText": "Стоянка стала городом. Люди называют вас вождём, а дым впервые отвечает огнём на ваш зов." },
+    { "id": "ancient_kingdoms", "name": "Эпоха античных царств", "order": 2, "implemented": true,
+      "superpower": "power_stone_rain", "superpowerName": "каменный дождь", "smokeEntities": ["stone_idol", "ember_spirit"],
+      "itemQuality": "bronze", "requiresStage": "royal_capital", "requiresTechs": 4, "role": "king", "tint": "#FFF8E8",
+      "chapterTitle": "Глава III. Царь", "chapterText": "Над городом поднялся дворец. Вы — царь, и у вас появилось Влияние. Теперь ваши решения переживут целые поколения." },
+    { "id": "empires", "name": "Эпоха империй", "order": 3, "implemented": false, "superpowerName": "проклятия" },
+    { "id": "renaissance", "name": "Эпоха Ренессанса", "order": 4, "implemented": false, "superpowerName": "шторм и ветер" },
+    { "id": "reforms", "name": "Эпоха реформ", "order": 5, "implemented": false, "superpowerName": "помутнение рассудка врага" },
+    { "id": "science", "name": "Эпоха научного подхода", "order": 6, "implemented": false, "superpowerName": "электрические доспехи" },
+    { "id": "industry", "name": "Эпоха промышленности", "order": 7, "implemented": false, "superpowerName": "создание двойников" },
+    { "id": "nuclear", "name": "Эпоха ядерных открытий", "order": 8, "implemented": false, "superpowerName": "снижение восприимчивости к радиации" },
+    { "id": "space", "name": "Эпоха космоса", "order": 9, "implemented": false, "superpowerName": "телепорт" },
+    { "id": "nano", "name": "Эпоха нанотехнологий", "order": 10, "implemented": false, "superpowerName": "невидимость" },
+    { "id": "interplanetary", "name": "Эпоха межпланетной инфраструктуры", "order": 11, "implemented": false, "superpowerName": "лазерные пулемёты и пушки" }
+  ]
+}

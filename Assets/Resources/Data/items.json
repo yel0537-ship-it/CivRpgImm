@@ -1,0 +1,76 @@
+{
+  "items": [
+    { "id": "wood", "name": "Дерево", "resource": true, "color": "#8B5A2B" },
+    { "id": "stone", "name": "Камень", "resource": true, "color": "#9E9E9E" },
+    { "id": "berries", "name": "Ягоды", "resource": true, "color": "#B03A48" },
+    { "id": "meat", "name": "Мясо", "resource": true, "color": "#C0504D" },
+    { "id": "hide", "name": "Шкуры", "resource": true, "color": "#A47148" },
+    { "id": "fiber", "name": "Волокно", "resource": true, "color": "#C8D6A0" },
+    { "id": "ore", "name": "Руда", "resource": true, "color": "#B4693A" },
+    { "id": "bronze", "name": "Бронза", "resource": true, "color": "#CD7F32" },
+    { "id": "food", "name": "Еда", "resource": true, "color": "#E0B04A" },
+    { "id": "lore", "name": "Записи древних", "resource": true, "color": "#D8D0B0" },
+    { "id": "essence", "name": "Мистический ресурс", "resource": true, "color": "#B98CFF" },
+
+    { "id": "club", "name": "Дубина", "slot": "weapon", "weaponType": "club", "damage": 4, "era": "primitive", "color": "#7A5230" },
+    { "id": "stone_spear", "name": "Каменное копьё", "slot": "weapon", "weaponType": "spear", "damage": 5, "era": "primitive", "color": "#9A8A70" },
+    { "id": "sling", "name": "Праща", "slot": "weapon", "weaponType": "sling", "damage": 3, "era": "primitive", "color": "#BFA77A" },
+    { "id": "copper_sword", "name": "Медный меч", "slot": "weapon", "weaponType": "sword", "damage": 8, "era": "city_states", "color": "#C77B4A" },
+    { "id": "bronze_sword", "name": "Бронзовый меч", "slot": "weapon", "weaponType": "sword", "damage": 11, "era": "city_states", "color": "#CD7F32" },
+    { "id": "bronze_spear", "name": "Бронзовое копьё", "slot": "weapon", "weaponType": "spear", "damage": 10, "era": "city_states", "color": "#CD7F32" },
+    { "id": "hide_armor", "name": "Доспех из шкур", "slot": "armor", "armor": 2, "era": "primitive", "color": "#A47148" },
+    { "id": "bronze_armor", "name": "Бронзовый доспех", "slot": "armor", "armor": 5, "era": "city_states", "color": "#CD7F32" },
+    { "id": "bone_amulet", "name": "Костяной оберег", "slot": "trinket", "era": "primitive", "color": "#E8E0D0" },
+    { "id": "smoke_charm", "name": "Амулет дыма", "slot": "trinket", "era": "city_states", "color": "#B98CFF" }
+  ],
+  "recipes": [
+    { "id": "club", "result": "club", "era": "primitive", "fieldQuality": "field", "workshopQuality": "settlement", "inputs": { "wood": 3, "stone": 1 } },
+    { "id": "sling", "result": "sling", "era": "primitive", "fieldQuality": "field", "workshopQuality": "settlement", "inputs": { "fiber": 3, "hide": 1 } },
+    { "id": "hide_armor", "result": "hide_armor", "era": "primitive", "fieldQuality": "field", "workshopQuality": "settlement", "inputs": { "hide": 4, "fiber": 2 } },
+    { "id": "bone_amulet", "result": "bone_amulet", "era": "primitive", "fieldQuality": "field", "workshopQuality": "settlement", "inputs": { "hide": 1, "stone": 2 } },
+    { "id": "stone_spear", "result": "stone_spear", "era": "primitive", "tech": "hunting_tactics", "fieldQuality": "field", "workshopQuality": "settlement", "inputs": { "wood": 3, "stone": 2, "fiber": 1 } },
+    { "id": "copper_sword", "result": "copper_sword", "era": "city_states", "tech": "copper_working", "fieldQuality": "field", "workshopQuality": "copper", "inputs": { "ore": 4, "wood": 2 } },
+    { "id": "bronze_sword", "result": "bronze_sword", "era": "city_states", "tech": "bronze_casting", "fieldQuality": "field", "workshopQuality": "bronze", "inputs": { "bronze": 4, "wood": 2 } },
+    { "id": "bronze_spear", "result": "bronze_spear", "era": "city_states", "tech": "bronze_casting", "fieldQuality": "field", "workshopQuality": "bronze", "inputs": { "bronze": 3, "wood": 3 } },
+    { "id": "bronze_armor", "result": "bronze_armor", "era": "city_states", "tech": "bronze_casting", "fieldQuality": "field", "workshopQuality": "bronze", "inputs": { "bronze": 6, "hide": 2 } },
+    { "id": "smoke_charm", "result": "smoke_charm", "era": "city_states", "tech": "mysticism", "fieldQuality": "field", "workshopQuality": "copper", "inputs": { "essence": 1, "stone": 2 } }
+  ],
+  "weaponTypes": [
+    { "id": "fists", "name": "Кулаки", "basic": "punch", "skills": ["stone_throw", "war_cry"] },
+    { "id": "club", "name": "Дубина", "basic": "club_hit", "skills": ["club_smash", "war_cry", "stone_throw"] },
+    { "id": "spear", "name": "Копьё", "basic": "spear_thrust", "skills": ["spear_lunge", "spear_sweep", "war_cry"] },
+    { "id": "sling", "name": "Праща", "basic": "sling_shot", "skills": ["sling_volley", "dust_cloud", "war_cry"] },
+    { "id": "sword", "name": "Меч", "basic": "sword_slash", "skills": ["whirlwind", "shield_bash", "battle_focus"] }
+  ],
+  "qualities": [
+    { "id": "field", "name": "полевое", "order": 0, "mult": 0.8, "affixes": 0 },
+    { "id": "settlement", "name": "поселенческое", "order": 1, "mult": 1.0, "affixes": 0 },
+    { "id": "copper", "name": "медное", "order": 2, "mult": 1.25, "affixes": 1 },
+    { "id": "bronze", "name": "бронзовое", "order": 3, "mult": 1.5, "affixes": 1 },
+    { "id": "iron", "name": "железное", "order": 4, "mult": 1.8, "affixes": 2 }
+  ],
+  "affixes": [
+    { "id": "sharp", "name": "острое", "stat": "damage", "min": 1, "max": 3 },
+    { "id": "sturdy", "name": "прочное", "stat": "armor", "min": 0.5, "max": 2 },
+    { "id": "vital", "name": "живучее", "stat": "hp", "min": 8, "max": 20 },
+    { "id": "swift", "name": "лёгкое", "stat": "speed", "min": 0.03, "max": 0.08 },
+    { "id": "focused", "name": "собранное", "stat": "cooldown", "min": 0.04, "max": 0.1 },
+    { "id": "spirited", "name": "одухотворённое", "stat": "energy", "min": 5, "max": 12 }
+  ],
+  "lootTables": [
+    { "id": "hunt_small", "entries": [ { "item": "meat", "min": 1, "max": 1 }, { "item": "hide", "min": 1, "max": 1, "chance": 0.5 } ] },
+    { "id": "hunt_deer", "entries": [ { "item": "meat", "min": 2, "max": 3 }, { "item": "hide", "min": 1, "max": 2 } ] },
+    { "id": "hunt_boar", "entries": [ { "item": "meat", "min": 3, "max": 4 }, { "item": "hide", "min": 1, "max": 2 } ] },
+    { "id": "wolf", "entries": [ { "item": "hide", "min": 1, "max": 1 }, { "item": "meat", "min": 1, "max": 1, "chance": 0.6 } ] },
+    { "id": "bear", "entries": [ { "item": "hide", "min": 3, "max": 4 }, { "item": "meat", "min": 4, "max": 5 } ], "equipChance": 0.15, "equipPool": ["bone_amulet"] },
+    { "id": "bandit", "entries": [ { "item": "berries", "min": 0, "max": 2 }, { "item": "hide", "min": 0, "max": 1 }, { "item": "ore", "min": 0, "max": 1, "chance": 0.4 } ],
+      "equipChance": 0.12, "equipPool": ["club", "stone_spear", "sling", "hide_armor"] },
+    { "id": "bandit_chief", "entries": [ { "item": "ore", "min": 1, "max": 3 } ], "equipChance": 0.8, "equipPool": ["stone_spear", "hide_armor", "bone_amulet", "copper_sword"] },
+    { "id": "spirit", "entries": [ { "item": "lore", "min": 0, "max": 1, "chance": 0.3 } ], "equipChance": 0.05, "equipPool": ["smoke_charm"] },
+    { "id": "soldier", "entries": [ { "item": "food", "min": 0, "max": 2 } ], "equipChance": 0.08, "equipPool": ["copper_sword", "bronze_spear", "bronze_armor"] },
+    { "id": "ruins_loot", "entries": [ { "item": "lore", "min": 1, "max": 3 } ], "equipChance": 0.3, "equipPool": ["bone_amulet", "copper_sword", "smoke_charm"] },
+    { "id": "cache_loot", "entries": [ { "item": "berries", "min": 3, "max": 6 }, { "item": "wood", "min": 2, "max": 5 }, { "item": "stone", "min": 2, "max": 4 }, { "item": "fiber", "min": 2, "max": 4 } ],
+      "equipChance": 0.25, "equipPool": ["club", "sling", "hide_armor"] },
+    { "id": "lair_loot", "entries": [ { "item": "hide", "min": 3, "max": 5 }, { "item": "meat", "min": 2, "max": 4 } ] }
+  ]
+}

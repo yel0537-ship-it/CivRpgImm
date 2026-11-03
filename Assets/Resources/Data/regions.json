@@ -1,0 +1,32 @@
+{
+  "regions": [
+    { "id": "r_valley", "name": "Долина Истока", "description": "Тёплая долина, откуда вас изгнали. Здесь легко выжить.",
+      "primary": "grass", "secondary": "forest", "secondaryChance": 0.35, "waterChance": 0.03, "mountainChance": 0.02, "danger": 1.0,
+      "fauna": ["hare", "deer", "deer", "wolf", "boar"], "cx": 0.5, "cy": 0.5,
+      "pois": { "ruins": 2, "cache": 3, "lair": 1, "oddity": 1, "zone": 1, "camp": 1 } },
+    { "id": "r_forest", "name": "Шепчущий лес", "description": "Старый лес. Говорят, деревья повторяют ваши слова.",
+      "primary": "forest", "secondary": "grass", "secondaryChance": 0.3, "waterChance": 0.04, "mountainChance": 0.03, "danger": 1.3,
+      "fauna": ["deer", "boar", "wolf", "bear"], "cx": 0.26, "cy": 0.3,
+      "pois": { "lair": 2, "camp": 1, "ruins": 1, "cache": 1, "zone": 1, "strange": 1 } },
+    { "id": "r_steppe", "name": "Ветреная степь", "description": "Бескрайняя трава, табуны и караваны.",
+      "primary": "steppe", "secondary": "grass", "secondaryChance": 0.25, "waterChance": 0.02, "mountainChance": 0.02, "danger": 1.3,
+      "fauna": ["deer", "hare", "wolf"], "cx": 0.76, "cy": 0.3,
+      "pois": { "horses": 2, "camp": 2, "outpost": 1, "cache": 1, "ruins": 1 } },
+    { "id": "r_marsh", "name": "Туманные топи", "description": "Вязкие болота, над которыми всегда висит дым.",
+      "primary": "swamp", "secondary": "grass", "secondaryChance": 0.3, "waterChance": 0.08, "mountainChance": 0.0, "danger": 1.6,
+      "fauna": ["boar", "marsh_lurker"], "cx": 0.24, "cy": 0.72,
+      "pois": { "zone": 2, "oddity": 1, "cache": 1, "lair": 1, "ruins": 1 } },
+    { "id": "r_hills", "name": "Медные холмы", "description": "Рудные холмы, крепости и разбойничьи тропы.",
+      "primary": "hills", "secondary": "steppe", "secondaryChance": 0.3, "waterChance": 0.02, "mountainChance": 0.1, "danger": 1.8,
+      "fauna": ["wolf", "bear", "boar"], "cx": 0.74, "cy": 0.72,
+      "pois": { "camp": 2, "outpost": 2, "ruins": 2, "lair": 1 } },
+    { "id": "r_dunes", "name": "Рыжие дюны", "description": "Пески, под которыми спят слишком ровные стены.",
+      "primary": "sand", "secondary": "steppe", "secondaryChance": 0.2, "waterChance": 0.01, "mountainChance": 0.05, "danger": 2.0,
+      "fauna": ["wolf", "hare"], "cx": 0.5, "cy": 0.88,
+      "pois": { "ruins": 2, "zone": 1, "cache": 1, "oddity": 1, "camp": 1 } },
+    { "id": "r_tundra", "name": "Белые пустоши", "description": "Холод, тишина и шаманы, видящие сны о машинах.",
+      "primary": "snow", "secondary": "forest", "secondaryChance": 0.25, "waterChance": 0.03, "mountainChance": 0.06, "danger": 2.2,
+      "fauna": ["wolf", "bear"], "cx": 0.5, "cy": 0.12,
+      "pois": { "zone": 1, "ruins": 1, "lair": 1, "strange": 1, "outpost": 1 } }
+  ]
+}

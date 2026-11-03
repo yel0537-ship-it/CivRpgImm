@@ -1,0 +1,28 @@
+{
+  "pois": [
+    { "id": "ruins", "name": "Древние руины", "kind": "ruins", "color": "#A89F91", "radius": 4,
+      "description": "Обломки стен слишком ровной кладки.", "science": 30, "xp": 25,
+      "rewards": { "stone": 4 }, "lootTable": "ruins_loot", "memory": "ruins_carvings", "dialogue": "dlg_ruins" },
+    { "id": "cache", "name": "Тайник", "kind": "cache", "color": "#C49A44", "radius": 2,
+      "description": "Кто-то спрятал здесь запасы.", "xp": 10, "lootTable": "cache_loot" },
+    { "id": "lair", "name": "Волчье логово", "kind": "lair", "color": "#5B4636", "radius": 5,
+      "description": "Кости и запах зверя.", "xp": 40, "respawnYears": 15, "lootTable": "lair_loot",
+      "enemies": [ { "id": "wolf", "count": 4 }, { "id": "wolf_alpha", "count": 1 } ], "rewards": { "hide": 3 } },
+    { "id": "camp", "name": "Лагерь разбойников", "kind": "camp", "color": "#8E3B2F", "radius": 6,
+      "description": "Дым костров и пьяные песни. Отсюда идут набеги.", "xp": 70, "respawnYears": 40, "lootTable": "bandit_chief",
+      "enemies": [ { "id": "bandit", "count": 4 }, { "id": "bandit_archer", "count": 2 }, { "id": "bandit_chief", "count": 1 } ],
+      "rewards": { "hide": 4, "ore": 3, "berries": 6 } },
+    { "id": "outpost", "name": "Аванпост", "kind": "outpost", "color": "#6D5D4B", "radius": 5, "capturable": true,
+      "description": "Деревянная вышка над дорогой. Кто держит её — держит землю вокруг.", "xp": 50,
+      "enemies": [ { "id": "bandit", "count": 3 }, { "id": "bandit_archer", "count": 2 } ], "rewards": { "stone": 6, "wood": 6 } },
+    { "id": "horses", "name": "Дикий табун", "kind": "horses", "color": "#8B5A2B", "radius": 4,
+      "description": "Кони пасутся, настороженно поводя ушами." },
+    { "id": "oddity", "name": "Странное место", "kind": "oddity", "color": "#7FD3D8", "radius": 3, "xp": 15,
+      "description": "Камни лежат идеальной сеткой.", "dialogue": "dlg_oddity", "memory": "oddity_seen" },
+    { "id": "strange", "name": "Странный отшельник", "kind": "strange", "color": "#B48CD8", "radius": 3, "xp": 15,
+      "description": "Человек, который знает ваше имя.", "dialogue": "dlg_strange_npc", "memory": "strange_hermit" },
+    { "id": "zone", "name": "Мистический дым", "kind": "zone", "color": "#6C4F8F", "radius": 14, "essencePool": 10,
+      "description": "Стена серо-лилового дыма. Внутри не видно ничего." },
+    { "id": "grave", "name": "Могила", "kind": "grave", "color": "#9A9A9A", "radius": 2, "description": "Здесь покоится спутник." }
+  ]
+}

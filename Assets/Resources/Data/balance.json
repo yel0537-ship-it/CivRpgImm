@@ -1,0 +1,130 @@
+{
+ "ticksPerSecond": 20,
+ "secondsPerMonth": 60,
+ "startYear": 1,
+ "worldTiles": 384,
+ "tileSize": 2,
+ "chunkTiles": 32,
+ "territoryCell": 8,
+ "hero": {
+  "hpBase": 80,
+  "hpPerBody": 10,
+  "energyBase": 30,
+  "energyPerWill": 5,
+  "energyRegen": 3,
+  "speed": 6.5,
+  "mountedSpeedMult": 1.8,
+  "radius": 0.5,
+  "startVitalityYears": 70,
+  "maxVitalityYears": 90,
+  "startAge": 22,
+  "dashDistance": 6,
+  "dashCooldown": 2.5,
+  "dashEnergy": 8,
+  "interactRange": 2.2,
+  "gatherTime": 1.2,
+  "xpPerPoint": 100,
+  "skillGain": 0.4,
+  "youthBodyMin": 0.6,
+  "ageMindBonus": 3,
+  "ageSpeechBonus": 25,
+  "defeatResourceLoss": 0.5
+ },
+ "vision": {
+  "radius": 24,
+  "smokeRadius": 7
+ },
+ "activation": {
+  "poiRadius": 55,
+  "despawnRadius": 80,
+  "npcRadius": 60,
+  "maxActiveEnemies": 40,
+  "maxAnimals": 10,
+  "animalSpawnInterval": 4
+ },
+ "recruit": {
+  "fullMargin": 0.15,
+  "critBase": 0.93,
+  "critPressure": 0.08,
+  "giftBonus": 0.25,
+  "needMatchBonus": 0.15,
+  "helpBonus": 0.4,
+  "repFactor": 0.003,
+  "speechFactor": 0.004,
+  "distrustPenalty": 0.07,
+  "trickEnergy": 10,
+  "helpEnergy": 5,
+  "pressureEnergy": 15,
+  "giftAmount": 5,
+  "failCooldownMonths": 2,
+  "partialRelation": -10,
+  "fullRelation": 30,
+  "namedCompanionLimit": 12
+ },
+ "city": {
+  "foodPerPop": 1,
+  "gatherPerPop": 0.8,
+  "woodPerPop": 0.2,
+  "stonePerPop": 0.15,
+  "sciencePerPop": 0.3,
+  "influencePerPop": 0.03,
+  "growthRate": 0.02,
+  "selfGrowthPop": 8,
+  "starvationRate": 0.03,
+  "baseHousing": 4,
+  "loyaltyDistancePenalty": 0.03,
+  "autonomyVulnerable": 40,
+  "autonomyEntrenched": 25,
+  "autonomyLegitimate": 12,
+  "emigrationOvercrowd": 1.3,
+  "settlerCostPop": 6
+ },
+ "essence": {
+  "rejuvenateCost": 3,
+  "rejuvenateYears": 15,
+  "skillLoss": 0.15,
+  "memoriesLost": 1,
+  "firstEssenceYears": 8,
+  "sciencePerEssence": 40,
+  "zoneGrowthPerYear": 0.6,
+  "zoneShrinkPerKill": 0.25,
+  "zoneMinRadius": 6,
+  "zoneMaxRadius": 42,
+  "poolRegenPerYear": 2
+ },
+ "time": {
+  "jumpOptions": [
+   25,
+   50,
+   100
+  ],
+  "sleepYearsMin": 20,
+  "sleepYearsMax": 40,
+  "jumpVitalityFactor": 0.2,
+  "fieldConversionPerPop": 0.02
+ },
+ "endings": {
+  "influenceVictory": 4000,
+  "influenceRatio": 2,
+  "awakeningEssence": 25,
+  "awakeningHints": 3
+ },
+ "war": {
+  "armySpeed": 3,
+  "battleRadius": 45,
+  "expandRadius": 50,
+  "soldiersPerUnit": 5,
+  "maxSoldiersPerSide": 12,
+  "siegeRate": 0.06,
+  "attritionRate": 0.12,
+  "recruitCostFood": 2,
+  "assassinationChance": 0.08
+ },
+ "companions": {
+  "maxParty": 3,
+  "errandMonths": 3,
+  "essenceErrandRisk": 0.12,
+  "rebellionRelation": -30,
+  "rebellionLoyalty": 35
+ }
+}

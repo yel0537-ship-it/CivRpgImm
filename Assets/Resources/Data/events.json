@@ -1,0 +1,1801 @@
+{
+ "dialogues": [
+  {
+   "id": "dlg_intro",
+   "title": "dlg_intro",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Племя прогнало вас — за правду, за дерзость, теперь уже неважно. У вас нет ничего, кроме рук. Но в долине живут люди, которые тоже остались одни.\n\nЛКМ — идти, ЛКМ по цели — бить или говорить, WASD — движение, 1–4 — умения к курсору, Пробел — рывок, I — снаряжение, C — ремесло, M — карта, Tab — меню правителя, F — основать лагерь, R — конь, F5/F9 — сохранить/загрузить.",
+     "options": [
+      {
+       "text": "Идти",
+       "next": "end"
+      }
+     ],
+     "speaker": "Изгнание"
+    }
+   ]
+  },
+  {
+   "id": "dlg_recruit",
+   "title": "dlg_recruit",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "{greeting}",
+     "options": [
+      {
+       "text": "Присмотреться к человеку",
+       "next": "start",
+       "conds": [
+        {
+         "notKnownAllTraits": "1"
+        }
+       ],
+       "effects": [
+        {
+         "observe": true
+        }
+       ]
+      },
+      {
+       "text": "Предложить дар (еда, шкуры или то, в чём нужда)",
+       "check": {
+        "kind": "recruit",
+        "approach": "gift",
+        "full": "full",
+        "partial": "partial",
+        "fail": "fail",
+        "crit": "crit"
+       }
+      },
+      {
+       "text": "Наплести о великом будущем (хитрость)",
+       "check": {
+        "kind": "recruit",
+        "approach": "trick",
+        "full": "full",
+        "partial": "partial",
+        "fail": "fail",
+        "crit": "crit"
+       }
+      },
+      {
+       "text": "Спросить, чем помочь",
+       "next": "quest",
+       "conds": [
+        {
+         "questStarted": false
+        }
+       ],
+       "effects": [
+        {
+         "questStart": true
+        }
+       ]
+      },
+      {
+       "text": "Я сделал, о чём ты просил",
+       "conds": [
+        {
+         "questStarted": true
+        }
+       ],
+       "check": {
+        "kind": "recruit",
+        "approach": "help",
+        "full": "full",
+        "partial": "partial",
+        "fail": "fail",
+        "crit": "crit"
+       }
+      },
+      {
+       "text": "Надавить (сила и воля)",
+       "check": {
+        "kind": "recruit",
+        "approach": "pressure",
+        "full": "full",
+        "partial": "partial",
+        "fail": "fail",
+        "crit": "crit"
+       }
+      },
+      {
+       "text": "Уйти",
+       "next": "end"
+      }
+     ],
+     "speaker": "{npc}"
+    },
+    {
+     "id": "quest",
+     "text": "{quest}",
+     "options": [
+      {
+       "text": "Я помогу",
+       "next": "end"
+      },
+      {
+       "text": "Подумаю",
+       "next": "end"
+      }
+     ],
+     "speaker": "{npc}"
+    },
+    {
+     "id": "full",
+     "text": "{npc} кивает. «Хорошо. Я пойду с тобой». (шанс был {chance})",
+     "options": [
+      {
+       "text": "В путь",
+       "next": "end"
+      }
+     ]
+    },
+    {
+     "id": "partial",
+     "text": "«Я приду к твоему костру. Но не жди от меня верности». (шанс был {chance})",
+     "options": [
+      {
+       "text": "Сойдёт",
+       "next": "end"
+      }
+     ]
+    },
+    {
+     "id": "fail",
+     "text": "{npc} качает головой. «Нет. Не сейчас». Придётся подождать. (шанс был {chance})",
+     "options": [
+      {
+       "text": "Уйти",
+       "next": "end"
+      }
+     ]
+    },
+    {
+     "id": "crit",
+     "text": "{npc} хватается за оружие! «Убирайся — или умри!» Слухи об этом разойдутся.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_descendant",
+   "title": "dlg_descendant",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Перед вами {descendant}. {lineage_line}",
+     "options": [
+      {
+       "text": "Позвать с собой, как когда-то {ancestor}",
+       "check": {
+        "kind": "recruit",
+        "approach": "trick",
+        "full": "full",
+        "partial": "partial",
+        "fail": "fail",
+        "crit": "crit"
+       }
+      },
+      {
+       "text": "Подарить что-нибудь в память о предке",
+       "check": {
+        "kind": "recruit",
+        "approach": "gift",
+        "full": "full",
+        "partial": "partial",
+        "fail": "fail",
+        "crit": "crit"
+       }
+      },
+      {
+       "text": "Надавить",
+       "check": {
+        "kind": "recruit",
+        "approach": "pressure",
+        "full": "full",
+        "partial": "partial",
+        "fail": "fail",
+        "crit": "crit"
+       }
+      },
+      {
+       "text": "Уйти",
+       "next": "end"
+      }
+     ],
+     "speaker": "{descendant}"
+    },
+    {
+     "id": "full",
+     "text": "{npc} кивает. «Хорошо. Я пойду с тобой». (шанс был {chance})",
+     "options": [
+      {
+       "text": "В путь",
+       "next": "end"
+      }
+     ]
+    },
+    {
+     "id": "partial",
+     "text": "«Я приду к твоему костру. Но не жди от меня верности». (шанс был {chance})",
+     "options": [
+      {
+       "text": "Сойдёт",
+       "next": "end"
+      }
+     ]
+    },
+    {
+     "id": "fail",
+     "text": "{npc} качает головой. «Нет. Не сейчас». Придётся подождать. (шанс был {chance})",
+     "options": [
+      {
+       "text": "Уйти",
+       "next": "end"
+      }
+     ]
+    },
+    {
+     "id": "crit",
+     "text": "{npc} хватается за оружие! «Убирайся — или умри!» Слухи об этом разойдутся.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_companion",
+   "title": "dlg_companion",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "{companion} — {relation}. {bio}",
+     "options": [
+      {
+       "text": "Иди со мной",
+       "next": "end",
+       "effects": [
+        {
+         "companionRole": "party"
+        }
+       ]
+      },
+      {
+       "text": "Жди в лагере",
+       "next": "end",
+       "effects": [
+        {
+         "companionRole": "camp"
+        }
+       ]
+      },
+      {
+       "text": "Сходи за ресурсами (3 мес.)",
+       "next": "end",
+       "effects": [
+        {
+         "companionRole": "errand",
+         "companionTarget": "resources"
+        }
+       ]
+      },
+      {
+       "text": "Разведай земли (3 мес.)",
+       "next": "end",
+       "effects": [
+        {
+         "companionRole": "errand",
+         "companionTarget": "intel"
+        }
+       ]
+      },
+      {
+       "text": "Принеси ресурс из дыма (опасно)",
+       "next": "end",
+       "effects": [
+        {
+         "companionRole": "errand",
+         "companionTarget": "essence"
+        }
+       ]
+      },
+      {
+       "text": "Поговорить по душам",
+       "next": "talk",
+       "effects": [
+        {
+         "relation": 2
+        }
+       ]
+      },
+      {
+       "text": "Ничего",
+       "next": "end"
+      }
+     ],
+     "speaker": "{companion}"
+    },
+    {
+     "id": "talk",
+     "text": "{companion} рассказывает о прошлом. Вы смеётесь вместе — впервые за долгое время.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "speaker": "{companion}"
+    }
+   ]
+  },
+  {
+   "id": "dlg_leader",
+   "title": "dlg_leader",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "{leader_title} {leader} принимает вас лично. {suspicion}",
+     "options": [
+      {
+       "text": "Предложить ненападение",
+       "conds": [
+        {
+         "atWar": false
+        }
+       ],
+       "check": {
+        "kind": "leader",
+        "skill": "speech",
+        "difficulty": 0.45,
+        "full": "ok_na",
+        "partial": "ok_na",
+        "fail": "refuse",
+        "crit": "insult"
+       }
+      },
+      {
+       "text": "Предложить торговлю",
+       "conds": [
+        {
+         "atWar": false
+        }
+       ],
+       "check": {
+        "kind": "leader",
+        "skill": "speech",
+        "difficulty": 0.35,
+        "full": "ok_trade",
+        "partial": "ok_trade",
+        "fail": "refuse",
+        "crit": "insult"
+       }
+      },
+      {
+       "text": "Предложить открытые границы",
+       "conds": [
+        {
+         "atWar": false
+        }
+       ],
+       "check": {
+        "kind": "leader",
+        "skill": "speech",
+        "difficulty": 0.55,
+        "full": "ok_borders",
+        "partial": "ok_borders",
+        "fail": "refuse",
+        "crit": "insult"
+       }
+      },
+      {
+       "text": "Предложить оборонительный союз",
+       "conds": [
+        {
+         "atWar": false
+        }
+       ],
+       "check": {
+        "kind": "leader",
+        "skill": "speech",
+        "difficulty": 0.8,
+        "full": "ok_alliance",
+        "partial": "ok_alliance",
+        "fail": "refuse",
+        "crit": "insult"
+       }
+      },
+      {
+       "text": "Предложить мир",
+       "conds": [
+        {
+         "atWar": true
+        }
+       ],
+       "check": {
+        "kind": "leader",
+        "skill": "speech",
+        "difficulty": 0.55,
+        "full": "ok_peace",
+        "partial": "ok_peace",
+        "fail": "refuse",
+        "crit": "insult"
+       }
+      },
+      {
+       "text": "Поднести дары (30 еды)",
+       "next": "bribe",
+       "conds": [
+        {
+         "item": "food",
+         "itemMin": 30
+        }
+       ],
+       "effects": [
+        {
+         "item": "food",
+         "amount": -30
+        },
+        {
+         "attitude": 15
+        }
+       ]
+      },
+      {
+       "text": "«Я видел знаки в древних руинах»",
+       "next": "carvings",
+       "conds": [
+        {
+         "memory": "ruins_carvings",
+         "notFlag": "talked_carvings"
+        }
+       ],
+       "effects": [
+        {
+         "setFlag": "talked_carvings"
+        },
+        {
+         "attitude": 10
+        }
+       ]
+      },
+      {
+       "text": "«Ты тоже замечаешь, что мир повторяется?»",
+       "next": "truth",
+       "conds": [
+        {
+         "hints": 2,
+         "notFlag": "leader_knows_truth"
+        }
+       ]
+      },
+      {
+       "text": "Попытаться похитить",
+       "conds": [
+        {
+         "attr": "body",
+         "attrMin": 6
+        }
+       ],
+       "check": {
+        "kind": "attr",
+        "attr": "body",
+        "difficulty": 0.9,
+        "full": "captured",
+        "partial": "captured_fail",
+        "fail": "captured_fail",
+        "crit": "captured_fail"
+       }
+      },
+      {
+       "text": "Напасть",
+       "next": "attack"
+      },
+      {
+       "text": "Уйти",
+       "next": "end"
+      }
+     ],
+     "speaker": "{leader}"
+    },
+    {
+     "id": "ok_na",
+     "text": "«Пусть будет так. Пока что». (шанс был {chance})",
+     "options": [
+      {
+       "text": "Договорились",
+       "next": "end"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "treaty": "non_aggression"
+      }
+     ]
+    },
+    {
+     "id": "ok_trade",
+     "text": "«Караваны пойдут». (шанс был {chance})",
+     "options": [
+      {
+       "text": "Договорились",
+       "next": "end"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "treaty": "trade"
+      }
+     ]
+    },
+    {
+     "id": "ok_borders",
+     "text": "«Мои дороги открыты для твоих людей». (шанс был {chance})",
+     "options": [
+      {
+       "text": "Договорились",
+       "next": "end"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "treaty": "open_borders"
+      }
+     ]
+    },
+    {
+     "id": "ok_alliance",
+     "text": "«Если на тебя нападут — я приду». (шанс был {chance})",
+     "options": [
+      {
+       "text": "Договорились",
+       "next": "end"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "treaty": "defensive_alliance"
+      }
+     ]
+    },
+    {
+     "id": "ok_peace",
+     "text": "«Хватит крови. Мир». (шанс был {chance})",
+     "options": [
+      {
+       "text": "Мир",
+       "next": "end"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "treaty": "peace"
+      }
+     ]
+    },
+    {
+     "id": "refuse",
+     "text": "«Нет». (шанс был {chance})",
+     "options": [
+      {
+       "text": "Жаль",
+       "next": "end"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "attitude": -3
+      }
+     ]
+    },
+    {
+     "id": "insult",
+     "text": "«Ты смеешь?!» Вас выпроваживают.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "attitude": -15
+      }
+     ]
+    },
+    {
+     "id": "bribe",
+     "text": "{leader} пересчитывает дары. «Ты умеешь договариваться».",
+     "options": [
+      {
+       "text": "…",
+       "next": "start"
+      }
+     ],
+     "speaker": "{leader}"
+    },
+    {
+     "id": "carvings",
+     "text": "«Ты тоже их видел? Значит, мы с тобой не просто соседи».",
+     "options": [
+      {
+       "text": "…",
+       "next": "start"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "hint": "leader_carvings"
+      }
+     ]
+    },
+    {
+     "id": "truth",
+     "text": "{leader} долго молчит. «Да. Я думал, я один замечаю. Иногда небо мерцает, как будто кто-то моргает».",
+     "options": [
+      {
+       "text": "…",
+       "next": "start"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "hint": "leader_truth"
+      },
+      {
+       "setFlag": "leader_knows_truth"
+      },
+      {
+       "attitude": 5
+      }
+     ]
+    },
+    {
+     "id": "captured",
+     "text": "Вы скручиваете {leader} и уводите в ночь. Держава обезглавлена.",
+     "options": [
+      {
+       "text": "Уходить",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "captureLeader": true
+      },
+      {
+       "rep": -10
+      }
+     ]
+    },
+    {
+     "id": "captured_fail",
+     "text": "Стража поднимает тревогу! Это война.",
+     "options": [
+      {
+       "text": "К бою!",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "startWar": true
+      },
+      {
+       "spawn": "soldier",
+       "spawnCount": 3
+      }
+     ]
+    },
+    {
+     "id": "attack",
+     "text": "{leader} обнажает оружие. «Значит, война. Я ждал этого тысячу лет».",
+     "options": [
+      {
+       "text": "К бою!",
+       "next": "end"
+      }
+     ],
+     "speaker": "{leader}",
+     "effects": [
+      {
+       "startWar": true
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_ruins",
+   "title": "dlg_ruins",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Среди обломков — знаки, высеченные слишком ровно, будто их отпечатали. Один повторяется снова и снова: круг, разрезанный линией.",
+     "options": [
+      {
+       "text": "Срисовать знаки",
+       "next": "end",
+       "effects": [
+        {
+         "xp": 5
+        }
+       ]
+      },
+      {
+       "text": "Уйти",
+       "next": "end"
+      }
+     ],
+     "speaker": "Руины"
+    }
+   ]
+  },
+  {
+   "id": "dlg_oddity",
+   "title": "dlg_oddity",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Камни лежат идеальной сеткой, и между ними не растёт ни травинки. Вы моргаете — и сетка смещается на шаг.",
+     "options": [
+      {
+       "text": "Потрогать камень",
+       "next": "end",
+       "effects": [
+        {
+         "hint": "oddity_grid"
+        },
+        {
+         "message": "Камень тёплый, как живой."
+        }
+       ]
+      },
+      {
+       "text": "Уйти",
+       "next": "end"
+      }
+     ],
+     "speaker": "Странное место"
+    }
+   ]
+  },
+  {
+   "id": "dlg_strange_npc",
+   "title": "dlg_strange_npc",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "«Здравствуй, {hero}. Ты снова пришёл. В прошлый раз ты сказал мне: {echo}»",
+     "options": [
+      {
+       "text": "Кто ты?",
+       "next": "who"
+      },
+      {
+       "text": "Уйти",
+       "next": "end"
+      }
+     ],
+     "speaker": "Отшельник"
+    },
+    {
+     "id": "who",
+     "text": "«Я тот, кого забыли выключить». Он смеётся и отворачивается.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "speaker": "Отшельник",
+     "effects": [
+      {
+       "hint": "hermit"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_grave",
+   "title": "dlg_grave",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Здесь лежит {companion}. Прошло {years_dead} лет.",
+     "options": [
+      {
+       "text": "Помолчать",
+       "next": "end"
+      },
+      {
+       "text": "«Я помню тебя»",
+       "next": "end",
+       "effects": [
+        {
+         "xp": 5
+        }
+       ]
+      }
+     ],
+     "speaker": "Могила"
+    }
+   ]
+  },
+  {
+   "id": "dlg_first_essence",
+   "title": "dlg_first_essence",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Ресурс в ладони пульсирует, как сердце. Тепло поднимается по рукам — и вы видите, как разглаживаются морщины. Вы молодеете на глазах.\n\nТеперь вы знаете, как сделать это снова (I → «Омолодиться»). Но каждый раз что-то уходит: часть навыка и воспоминаний.",
+     "options": [
+      {
+       "text": "Сжать ладонь",
+       "next": "end"
+      }
+     ],
+     "speaker": "Мистический ресурс",
+     "effects": [
+      {
+       "rejuvenationUnlock": true
+      },
+      {
+       "vitality": 8
+      },
+      {
+       "memory": "core_first_essence"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_camp_founded",
+   "title": "dlg_camp_founded",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Огонь разгорается. Это не просто костёр — это начало. Сдавайте добычу у костра, ставьте шалаши и поля (Tab — меню правителя). Зовите людей: после восьми община начнёт расти сама.",
+     "options": [
+      {
+       "text": "Начнём",
+       "next": "end"
+      }
+     ],
+     "speaker": "{city}"
+    }
+   ]
+  },
+  {
+   "id": "dlg_taboo",
+   "title": "dlg_taboo",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Люди узнали, что ресурс продлевает жизнь. Старейшины спрашивают: кому он принадлежит?",
+     "options": [
+      {
+       "text": "Только правителю. Нарушителей — казнить.",
+       "next": "end",
+       "effects": [
+        {
+         "taboo": "strict"
+        },
+        {
+         "allLoyalty": -3
+        },
+        {
+         "influence": 5
+        }
+       ]
+      },
+      {
+       "text": "Правителю — но без казней.",
+       "next": "end",
+       "effects": [
+        {
+         "taboo": "lenient"
+        }
+       ]
+      },
+      {
+       "text": "Всем, кто его найдёт.",
+       "next": "end",
+       "effects": [
+        {
+         "taboo": "none"
+        },
+        {
+         "allLoyalty": 5
+        },
+        {
+         "setFlag": "essence_free"
+        }
+       ]
+      }
+     ],
+     "speaker": "Старейшины"
+    }
+   ]
+  },
+  {
+   "id": "dlg_dying_friend",
+   "title": "dlg_dying_friend",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "{companion} умирает. «Ты молодеешь, а я ухожу. Дай мне немного ресурса… хоть несколько лет».",
+     "options": [
+      {
+       "text": "Дать ресурс (3)",
+       "next": "given",
+       "conds": [
+        {
+         "item": "essence",
+         "itemMin": 3,
+         "tabooActive": false
+        }
+       ],
+       "effects": [
+        {
+         "item": "essence",
+         "amount": -3
+        },
+        {
+         "companionLifespan": 12
+        },
+        {
+         "relation": 20
+        }
+       ]
+      },
+      {
+       "text": "Дать ресурс тайно, вопреки табу (3)",
+       "next": "given_secret",
+       "conds": [
+        {
+         "item": "essence",
+         "itemMin": 3,
+         "tabooActive": true
+        }
+       ],
+       "effects": [
+        {
+         "item": "essence",
+         "amount": -3
+        },
+        {
+         "companionLifespan": 12
+        },
+        {
+         "relation": 25
+        },
+        {
+         "setFlag": "taboo_broken"
+        },
+        {
+         "allLoyalty": -8
+        }
+       ]
+      },
+      {
+       "text": "Отказать",
+       "next": "refused",
+       "effects": [
+        {
+         "relation": -40
+        },
+        {
+         "setFlag": "refused_dying_friend"
+        }
+       ]
+      },
+      {
+       "text": "Обнять и проститься",
+       "next": "farewell",
+       "effects": [
+        {
+         "relation": 10
+        }
+       ]
+      }
+     ],
+     "speaker": "{companion}"
+    },
+    {
+     "id": "given",
+     "text": "{companion} плачет от облегчения. «Ты не забудешь меня… правда?»",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "speaker": "{companion}"
+    },
+    {
+     "id": "given_secret",
+     "text": "Вы отдаёте ресурс ночью. Утром о нарушенном табу уже шепчутся.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ]
+    },
+    {
+     "id": "refused",
+     "text": "{companion} отворачивается к стене. Его дети запомнят этот день.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ]
+    },
+    {
+     "id": "farewell",
+     "text": "Вы сидите рядом до рассвета.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_stolen_essence",
+   "title": "dlg_stolen_essence",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Стражник украл ресурс из хранилища — для умирающей дочери. Его привели к вам.",
+     "options": [
+      {
+       "text": "Казнить по закону",
+       "next": "end",
+       "effects": [
+        {
+         "allLoyalty": -3
+        },
+        {
+         "rep": -2
+        },
+        {
+         "setFlag": "executed_thief"
+        },
+        {
+         "chronicle": "Год {year}. Стражник казнён за кражу ресурса жизни."
+        }
+       ]
+      },
+      {
+       "text": "Помиловать",
+       "next": "end",
+       "effects": [
+        {
+         "setFlag": "taboo_weakened"
+        },
+        {
+         "allLoyalty": 2
+        },
+        {
+         "chronicle": "Год {year}. Правитель помиловал вора ресурса. Табу дало трещину."
+        }
+       ]
+      },
+      {
+       "text": "Отдать ещё ресурса для дочери (1)",
+       "next": "end",
+       "conds": [
+        {
+         "item": "essence",
+         "itemMin": 1
+        }
+       ],
+       "effects": [
+        {
+         "item": "essence",
+         "amount": -1
+        },
+        {
+         "rep": 5
+        },
+        {
+         "setFlag": "mercy_essence"
+        }
+       ]
+      }
+     ],
+     "speaker": "Суд"
+    }
+   ]
+  },
+  {
+   "id": "dlg_inequality",
+   "title": "dlg_inequality",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "По городам ползут слухи: правитель молод веками, а народ стареет и умирает. «Почему ему можно, а нам нет?»",
+     "options": [
+      {
+       "text": "Поделиться ресурсом с народом (5)",
+       "next": "end",
+       "conds": [
+        {
+         "item": "essence",
+         "itemMin": 5
+        }
+       ],
+       "effects": [
+        {
+         "item": "essence",
+         "amount": -5
+        },
+        {
+         "taboo": "none"
+        },
+        {
+         "allLoyalty": 12
+        },
+        {
+         "setFlag": "shared_essence"
+        }
+       ]
+      },
+      {
+       "text": "Подавить слухи",
+       "next": "end",
+       "effects": [
+        {
+         "allLoyalty": -10
+        },
+        {
+         "setFlag": "inequality_known"
+        }
+       ]
+      },
+      {
+       "text": "Объявить себя богом",
+       "next": "end",
+       "effects": [
+        {
+         "rep": -5
+        },
+        {
+         "influence": 25
+        },
+        {
+         "setFlag": "god_king"
+        },
+        {
+         "allLoyalty": -3
+        }
+       ]
+      }
+     ],
+     "speaker": "Народ"
+    }
+   ]
+  },
+  {
+   "id": "dlg_rebellion",
+   "title": "dlg_rebellion",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "{companion}, ваш старый друг, поднял {city} против вас. «Ты забыл нас, пока молодел».",
+     "options": [
+      {
+       "text": "Поговорить как друг",
+       "check": {
+        "kind": "skill",
+        "skill": "speech",
+        "difficulty": 0.6,
+        "full": "reconciled",
+        "partial": "reconciled",
+        "fail": "seceded",
+        "crit": "seceded"
+       }
+      },
+      {
+       "text": "Казнить мятежника",
+       "next": "executed",
+       "effects": [
+        {
+         "killCompanion": true
+        },
+        {
+         "loyalty": 25
+        },
+        {
+         "allLoyalty": -5
+        }
+       ]
+      },
+      {
+       "text": "Отпустить город с миром",
+       "next": "released",
+       "effects": [
+        {
+         "cityIndependent": true
+        },
+        {
+         "relation": 20
+        }
+       ]
+      }
+     ],
+     "speaker": "{companion}"
+    },
+    {
+     "id": "reconciled",
+     "text": "{companion} опускает оружие. «Ладно. Но я буду следить за тобой».",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "relation": 30
+      },
+      {
+       "loyalty": 30
+      }
+     ]
+    },
+    {
+     "id": "seceded",
+     "text": "{city} закрывает ворота. Теперь это вольный город-государство.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "cityIndependent": true
+      }
+     ]
+    },
+    {
+     "id": "executed",
+     "text": "Голова мятежника на колу. В городе тихо — слишком тихо.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ]
+    },
+    {
+     "id": "released",
+     "text": "{city} уходит. {companion} обещает помнить добро.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_envoy_trade",
+   "title": "dlg_envoy_trade",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Посол {nation} предлагает торговое соглашение. «Караваны принесут богатство обоим».",
+     "options": [
+      {
+       "text": "Принять",
+       "next": "end",
+       "effects": [
+        {
+         "treaty": "trade"
+        }
+       ]
+      },
+      {
+       "text": "Отказать",
+       "next": "end",
+       "effects": [
+        {
+         "attitude": -5
+        }
+       ]
+      }
+     ],
+     "speaker": "Посол {nation}"
+    }
+   ]
+  },
+  {
+   "id": "dlg_envoy_non_aggression",
+   "title": "dlg_envoy_non_aggression",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Посол {nation} предлагает пакт о ненападении.",
+     "options": [
+      {
+       "text": "Принять",
+       "next": "end",
+       "effects": [
+        {
+         "treaty": "non_aggression"
+        }
+       ]
+      },
+      {
+       "text": "Отказать",
+       "next": "end",
+       "effects": [
+        {
+         "attitude": -5
+        }
+       ]
+      }
+     ],
+     "speaker": "Посол {nation}"
+    }
+   ]
+  },
+  {
+   "id": "dlg_envoy_open_borders",
+   "title": "dlg_envoy_open_borders",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Посол {nation} предлагает открыть границы для путников и купцов.",
+     "options": [
+      {
+       "text": "Принять",
+       "next": "end",
+       "effects": [
+        {
+         "treaty": "open_borders"
+        }
+       ]
+      },
+      {
+       "text": "Отказать",
+       "next": "end",
+       "effects": [
+        {
+         "attitude": -5
+        }
+       ]
+      }
+     ],
+     "speaker": "Посол {nation}"
+    }
+   ]
+  },
+  {
+   "id": "dlg_envoy_peace",
+   "title": "dlg_envoy_peace",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Посол {nation} просит мира.",
+     "options": [
+      {
+       "text": "Заключить мир",
+       "next": "end",
+       "effects": [
+        {
+         "treaty": "peace"
+        }
+       ]
+      },
+      {
+       "text": "Продолжать войну",
+       "next": "end",
+       "effects": [
+        {
+         "attitude": -5
+        }
+       ]
+      }
+     ],
+     "speaker": "Посол {nation}"
+    }
+   ]
+  },
+  {
+   "id": "dlg_assassins",
+   "title": "dlg_assassins",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Из темноты выходят люди в чёрном. Их послал {leader}.",
+     "options": [
+      {
+       "text": "К бою!",
+       "next": "end"
+      }
+     ],
+     "speaker": "Засада",
+     "effects": [
+      {
+       "spawn": "assassin",
+       "spawnCount": 3
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_era_city_states",
+   "title": "dlg_era_city_states",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Стоянка выросла в город-государство. Огонь в дыму отвечает вам: внутри мистических зон доступен огненный шар (клавиша 4).\n\nМожно остаться — или отпустить годы и увидеть, что вырастет без вас.",
+     "options": [
+      {
+       "text": "Перескочить на 25 лет",
+       "next": "end",
+       "effects": [
+        {
+         "timeJump": 25
+        }
+       ]
+      },
+      {
+       "text": "…на 50 лет",
+       "next": "end",
+       "effects": [
+        {
+         "timeJump": 50
+        }
+       ]
+      },
+      {
+       "text": "…на 100 лет",
+       "next": "end",
+       "effects": [
+        {
+         "timeJump": 100
+        }
+       ]
+      },
+      {
+       "text": "Остаться в этом времени",
+       "next": "end"
+      }
+     ],
+     "speaker": "Эпоха городов-государств"
+    }
+   ]
+  },
+  {
+   "id": "dlg_era_ancient_kingdoms",
+   "title": "dlg_era_ancient_kingdoms",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Над городом поднялся дворец. Вы — царь. Появилось Влияние для эдиктов и решений, а дым теперь обрушивает каменный дождь (4).\n\nМожно остаться — или отпустить годы и увидеть, что вырастет без вас.",
+     "options": [
+      {
+       "text": "Перескочить на 25 лет",
+       "next": "end",
+       "effects": [
+        {
+         "timeJump": 25
+        }
+       ]
+      },
+      {
+       "text": "…на 50 лет",
+       "next": "end",
+       "effects": [
+        {
+         "timeJump": 50
+        }
+       ]
+      },
+      {
+       "text": "…на 100 лет",
+       "next": "end",
+       "effects": [
+        {
+         "timeJump": 100
+        }
+       ]
+      },
+      {
+       "text": "Остаться в этом времени",
+       "next": "end"
+      }
+     ],
+     "speaker": "Эпоха античных царств"
+    }
+   ]
+  },
+  {
+   "id": "dlg_awaken",
+   "title": "dlg_awaken",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Вы открываете глаза. Сколько прошло? Люди смотрят на вас как на призрака: о вашем возвращении слагали легенды.",
+     "options": [
+      {
+       "text": "Встать",
+       "next": "end"
+      }
+     ],
+     "speaker": "Пробуждение"
+    }
+   ]
+  },
+  {
+   "id": "dlg_after_jump",
+   "title": "dlg_after_jump",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Среди встречных мелькает лицо, которое вы уже видели. Много лет назад. Оно не постарело ни на день.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "hint": "after_jump_face"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_hint_echo",
+   "title": "dlg_hint_echo",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Прохожий бросает на ходу: {echo}",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "speaker": "Прохожий"
+    }
+   ]
+  },
+  {
+   "id": "dlg_smoke_voice",
+   "title": "dlg_smoke_voice",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Голос в дыму шепчет: «Цикл 4 471. Субъект снова здесь».",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "speaker": "Дым",
+     "effects": [
+      {
+       "hint": "smoke_voice"
+      }
+     ]
+    }
+   ]
+  }
+ ],
+ "events": [
+  {
+   "id": "ev_start",
+   "trigger": "start",
+   "dialogue": "dlg_intro",
+   "chance": 1.0,
+   "once": true
+  },
+  {
+   "id": "ev_first_essence",
+   "trigger": "first_essence",
+   "dialogue": "dlg_first_essence",
+   "chance": 1.0,
+   "once": true
+  },
+  {
+   "id": "ev_camp",
+   "trigger": "camp_founded",
+   "dialogue": "dlg_camp_founded",
+   "chance": 1.0,
+   "once": true
+  },
+  {
+   "id": "ev_taboo",
+   "trigger": "stage_city_state",
+   "dialogue": "dlg_taboo",
+   "chance": 1.0,
+   "once": true
+  },
+  {
+   "id": "ev_dying",
+   "trigger": "companion_dying",
+   "dialogue": "dlg_dying_friend",
+   "chance": 1.0,
+   "once": false
+  },
+  {
+   "id": "ev_stolen",
+   "trigger": "monthly",
+   "dialogue": "dlg_stolen_essence",
+   "chance": 0.03,
+   "once": false,
+   "cooldownYears": 15,
+   "conds": [
+    {
+     "minEra": "city_states",
+     "tabooActive": true
+    }
+   ]
+  },
+  {
+   "id": "ev_inequality",
+   "trigger": "monthly",
+   "dialogue": "dlg_inequality",
+   "chance": 0.05,
+   "once": true,
+   "conds": [
+    {
+     "flag": "taboo_broken"
+    }
+   ]
+  },
+  {
+   "id": "ev_inequality_late",
+   "trigger": "monthly",
+   "dialogue": "dlg_inequality",
+   "chance": 0.02,
+   "once": true,
+   "conds": [
+    {
+     "minEra": "ancient_kingdoms",
+     "tabooActive": true
+    }
+   ]
+  },
+  {
+   "id": "ev_rebellion",
+   "trigger": "rebellion",
+   "dialogue": "dlg_rebellion",
+   "chance": 1.0,
+   "once": false
+  },
+  {
+   "id": "ev_envoy_trade",
+   "trigger": "envoy_trade",
+   "dialogue": "dlg_envoy_trade",
+   "chance": 1.0,
+   "once": false,
+   "cooldownYears": 5
+  },
+  {
+   "id": "ev_envoy_non_aggression",
+   "trigger": "envoy_non_aggression",
+   "dialogue": "dlg_envoy_non_aggression",
+   "chance": 1.0,
+   "once": false,
+   "cooldownYears": 5
+  },
+  {
+   "id": "ev_envoy_open_borders",
+   "trigger": "envoy_open_borders",
+   "dialogue": "dlg_envoy_open_borders",
+   "chance": 1.0,
+   "once": false,
+   "cooldownYears": 5
+  },
+  {
+   "id": "ev_envoy_peace",
+   "trigger": "envoy_peace",
+   "dialogue": "dlg_envoy_peace",
+   "chance": 1.0,
+   "once": false,
+   "cooldownYears": 2
+  },
+  {
+   "id": "ev_assassins",
+   "trigger": "assassins",
+   "dialogue": "dlg_assassins",
+   "chance": 1.0,
+   "once": false,
+   "cooldownYears": 4
+  },
+  {
+   "id": "ev_era_cs",
+   "trigger": "era_city_states",
+   "dialogue": "dlg_era_city_states",
+   "chance": 1.0,
+   "once": true
+  },
+  {
+   "id": "ev_era_ak",
+   "trigger": "era_ancient_kingdoms",
+   "dialogue": "dlg_era_ancient_kingdoms",
+   "chance": 1.0,
+   "once": true
+  },
+  {
+   "id": "ev_awaken",
+   "trigger": "awaken",
+   "dialogue": "dlg_awaken",
+   "chance": 1.0,
+   "once": false
+  },
+  {
+   "id": "ev_after_jump",
+   "trigger": "after_jump",
+   "dialogue": "dlg_after_jump",
+   "chance": 0.5,
+   "once": true
+  },
+  {
+   "id": "ev_echo",
+   "trigger": "monthly",
+   "dialogue": "dlg_hint_echo",
+   "chance": 0.03,
+   "once": false,
+   "cooldownYears": 5,
+   "conds": [
+    {
+     "minEra": "city_states"
+    }
+   ]
+  },
+  {
+   "id": "ev_smoke_voice",
+   "trigger": "monthly",
+   "dialogue": "dlg_smoke_voice",
+   "chance": 0.08,
+   "once": true,
+   "conds": [
+    {
+     "inSmoke": true
+    }
+   ]
+  }
+ ]
+}

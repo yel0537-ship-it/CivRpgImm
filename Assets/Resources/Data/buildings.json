@@ -1,0 +1,388 @@
+{
+ "buildings": [
+  {
+   "id": "fire_pit",
+   "name": "Костёр",
+   "era": "primitive",
+   "service": "ruler",
+   "size": 1.6,
+   "height": 0.6,
+   "color": "#FF8A3D",
+   "max": 1,
+   "housing": 0,
+   "description": "Сердце стоянки. Здесь сдают добычу и решают дела общины."
+  },
+  {
+   "id": "hut",
+   "name": "Шалаш",
+   "era": "primitive",
+   "cost": {
+    "wood": 8
+   },
+   "housing": 5,
+   "size": 2.4,
+   "height": 1.8,
+   "color": "#8D6E4A",
+   "description": "Кров на одну семью."
+  },
+  {
+   "id": "field",
+   "name": "Поле",
+   "era": "primitive",
+   "cost": {
+    "wood": 6
+   },
+   "food": 4,
+   "size": 3.5,
+   "height": 0.15,
+   "color": "#C9B04B",
+   "description": "Первые грядки."
+  },
+  {
+   "id": "storage",
+   "name": "Склад",
+   "era": "primitive",
+   "service": "storage",
+   "cost": {
+    "wood": 10
+   },
+   "production": 1,
+   "size": 2.4,
+   "height": 1.6,
+   "color": "#A1887F",
+   "max": 2,
+   "description": "Запасы общины."
+  },
+  {
+   "id": "workshop",
+   "name": "Мастерская",
+   "era": "primitive",
+   "service": "workshop",
+   "cost": {
+    "wood": 12,
+    "stone": 6
+   },
+   "production": 2,
+   "size": 2.8,
+   "height": 2.0,
+   "color": "#795548",
+   "max": 1,
+   "interior": true,
+   "description": "Здесь из сырья делают вещи лучше полевых."
+  },
+  {
+   "id": "pen",
+   "name": "Загон",
+   "era": "primitive",
+   "tech": "animal_taming",
+   "cost": {
+    "wood": 10
+   },
+   "food": 5,
+   "size": 3.2,
+   "height": 0.8,
+   "color": "#A0855B",
+   "description": "Скот кормит общину.",
+   "max": 3
+  },
+  {
+   "id": "shrine",
+   "name": "Святилище дыма",
+   "era": "primitive",
+   "tech": "smoke_rites",
+   "cost": {
+    "wood": 15,
+    "stone": 15
+   },
+   "loyalty": 6,
+   "science": 1,
+   "size": 2.2,
+   "height": 2.6,
+   "color": "#7E57C2",
+   "max": 1,
+   "interior": true,
+   "specialization": "science",
+   "description": "Здесь слушают дым."
+  },
+  {
+   "id": "palisade",
+   "name": "Частокол",
+   "era": "primitive",
+   "tech": "palisade",
+   "cost": {
+    "wood": 30
+   },
+   "defense": 3,
+   "size": 3,
+   "height": 2.2,
+   "color": "#6D4C41",
+   "max": 1,
+   "specialization": "military",
+   "description": "Защита от набегов."
+  },
+  {
+   "id": "chief_house",
+   "name": "Дом вождя",
+   "era": "primitive",
+   "tech": "chiefdom",
+   "service": "ruler",
+   "minStage": "hamlet",
+   "cost": {
+    "wood": 30,
+    "stone": 15
+   },
+   "loyalty": 5,
+   "influence": 1,
+   "size": 3.4,
+   "height": 2.8,
+   "color": "#B07D48",
+   "max": 1,
+   "interior": true,
+   "specialization": "admin",
+   "description": "Отсюда вы правите."
+  },
+  {
+   "id": "settlement_center",
+   "name": "Центр поселения",
+   "era": "primitive",
+   "tech": "oral_tradition",
+   "minStage": "hamlet",
+   "cost": {
+    "wood": 40,
+    "stone": 30
+   },
+   "loyalty": 4,
+   "production": 2,
+   "size": 3.6,
+   "height": 2.4,
+   "color": "#C0A27A",
+   "max": 1,
+   "interior": true,
+   "description": "Общий дом, площадь и сказители."
+  },
+  {
+   "id": "house",
+   "name": "Дом",
+   "era": "city_states",
+   "cost": {
+    "wood": 15,
+    "stone": 10
+   },
+   "housing": 12,
+   "size": 2.6,
+   "height": 2.6,
+   "color": "#BCAAA4",
+   "description": "Глиняный дом на несколько семей."
+  },
+  {
+   "id": "granary",
+   "name": "Амбар",
+   "era": "city_states",
+   "tech": "irrigation",
+   "cost": {
+    "wood": 20,
+    "stone": 15
+   },
+   "food": 6,
+   "health": 2,
+   "size": 2.8,
+   "height": 2.4,
+   "color": "#D7CCC8",
+   "specialization": "economy",
+   "description": "Запасы на чёрный год.",
+   "max": 2
+  },
+  {
+   "id": "school",
+   "name": "Школа писцов",
+   "era": "city_states",
+   "tech": "writing",
+   "cost": {
+    "wood": 25,
+    "stone": 25
+   },
+   "science": 4,
+   "size": 3,
+   "height": 2.8,
+   "color": "#90A4AE",
+   "interior": true,
+   "specialization": "science",
+   "description": "Писцы и счётчики.",
+   "max": 2
+  },
+  {
+   "id": "barracks",
+   "name": "Казармы",
+   "era": "city_states",
+   "tech": "warrior_code",
+   "cost": {
+    "wood": 25,
+    "stone": 20
+   },
+   "defense": 4,
+   "size": 3,
+   "height": 2.4,
+   "color": "#8D6E63",
+   "specialization": "military",
+   "description": "Постоянная дружина.",
+   "max": 2
+  },
+  {
+   "id": "mine",
+   "name": "Рудник",
+   "era": "city_states",
+   "tech": "copper_working",
+   "cost": {
+    "wood": 15,
+    "stone": 10
+   },
+   "production": 2,
+   "size": 2.6,
+   "height": 1.8,
+   "color": "#6D4C41",
+   "max": 1,
+   "specialization": "economy",
+   "description": "Даёт руду."
+  },
+  {
+   "id": "forge",
+   "name": "Литейня",
+   "era": "city_states",
+   "tech": "bronze_casting",
+   "cost": {
+    "stone": 30,
+    "ore": 10
+   },
+   "production": 3,
+   "size": 2.8,
+   "height": 2.6,
+   "color": "#5D4037",
+   "max": 1,
+   "description": "Плавит руду в бронзу."
+  },
+  {
+   "id": "market",
+   "name": "Рынок",
+   "era": "city_states",
+   "tech": "law_code",
+   "cost": {
+    "wood": 30,
+    "stone": 30
+   },
+   "influence": 2,
+   "loyalty": 3,
+   "production": 2,
+   "size": 3.6,
+   "height": 1.6,
+   "color": "#FFB74D",
+   "max": 1,
+   "specialization": "admin",
+   "description": "Торг и слухи."
+  },
+  {
+   "id": "walls",
+   "name": "Каменные стены",
+   "era": "city_states",
+   "tech": "stone_walls",
+   "cost": {
+    "stone": 60
+   },
+   "defense": 8,
+   "size": 3.6,
+   "height": 3,
+   "color": "#9E9E9E",
+   "max": 1,
+   "specialization": "military",
+   "description": "Город за стеной."
+  },
+  {
+   "id": "palace",
+   "name": "Дворец",
+   "era": "city_states",
+   "tech": "monarchy",
+   "service": "ruler",
+   "minStage": "large_city",
+   "cost": {
+    "stone": 120,
+    "wood": 80,
+    "bronze": 20
+   },
+   "loyalty": 10,
+   "influence": 5,
+   "size": 5,
+   "height": 4.5,
+   "color": "#E6C26E",
+   "max": 1,
+   "interior": true,
+   "description": "Престол царства."
+  },
+  {
+   "id": "insula",
+   "name": "Многоэтажный дом",
+   "era": "ancient_kingdoms",
+   "tech": "aqueducts",
+   "cost": {
+    "stone": 40,
+    "wood": 20
+   },
+   "housing": 25,
+   "size": 3,
+   "height": 4,
+   "color": "#D7B98E",
+   "description": "Жильё для большого города."
+  },
+  {
+   "id": "laboratory",
+   "name": "Лаборатория сущности",
+   "era": "ancient_kingdoms",
+   "tech": "essence_alchemy",
+   "cost": {
+    "stone": 80,
+    "bronze": 30
+   },
+   "science": 8,
+   "size": 3.4,
+   "height": 3.6,
+   "color": "#9575CD",
+   "max": 1,
+   "interior": true,
+   "description": "Здесь мистический ресурс изучают, а не жгут."
+  },
+  {
+   "id": "eternal_spire",
+   "name": "Шпиль вечности",
+   "era": "ancient_kingdoms",
+   "tech": "eternity_formula",
+   "cost": {
+    "stone": 300,
+    "bronze": 80,
+    "essence": 10
+   },
+   "influence": 10,
+   "size": 5,
+   "height": 14,
+   "color": "#FFF59D",
+   "max": 1,
+   "megastructure": true,
+   "description": "Мегасооружение: жизненная сила правителя перестаёт убывать."
+  },
+  {
+   "id": "mirror_of_sky",
+   "name": "Зеркало небес",
+   "era": "ancient_kingdoms",
+   "tech": "simulation_theory",
+   "cost": {
+    "stone": 300,
+    "bronze": 60,
+    "essence": 10
+   },
+   "science": 10,
+   "size": 5,
+   "height": 10,
+   "color": "#80DEEA",
+   "max": 1,
+   "megastructure": true,
+   "description": "Мегасооружение: показывает, что за небом."
+  }
+ ]
+}

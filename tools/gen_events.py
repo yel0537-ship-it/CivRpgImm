@@ -61,6 +61,7 @@ dlg("dlg_leader",[node("start","{leader_title} {leader} принимает ва�
   opt("«Я видел знаки в древних руинах»","carvings",conds=[{"memory":"ruins_carvings","notFlag":"talked_carvings"}],effects=[{"setFlag":"talked_carvings"},{"attitude":10}]),
   opt("«Ты тоже замечаешь, что мир повторяется?»","truth",conds=[{"hints":2,"notFlag":"leader_knows_truth"}]),
   opt("Попытаться похитить",conds=[{"attr":"body","attrMin":6}],check={"kind":"attr","attr":"body","difficulty":0.9,"full":"captured","partial":"captured_fail","fail":"captured_fail","crit":"captured_fail"}),
+  opt("«Ты меня помнишь?»","memory"),
   opt("Напасть","attack"),
   opt("Уйти")],speaker="{leader}",effects=[{"setFlag":"met_leader"}]),
   node("ok_na","«Пусть будет так. Пока что». (шанс был {chance})",[opt("Договорились")],speaker="{leader}",effects=[{"treaty":"non_aggression"}]),
@@ -75,6 +76,7 @@ dlg("dlg_leader",[node("start","{leader_title} {leader} принимает ва�
   node("truth","{leader} долго молчит. «Да. Я думал, я один замечаю. Иногда небо мерцает, как будто кто-то моргает».",[opt("…","start")],speaker="{leader}",effects=[{"hint":"leader_truth"},{"setFlag":"leader_knows_truth"},{"attitude":5}]),
   node("captured","Вы скручиваете {leader} и уводите в ночь. Держава обезглавлена.",[opt("Уходить")],effects=[{"captureLeader":True},{"rep":-10}]),
   node("captured_fail","Стража поднимает тревогу! Это война.",[opt("К бою!")],effects=[{"startWar":True},{"spawn":"soldier","spawnCount":3}]),
+  node("memory","{leader} смотрит долго. {leader_memory}",[opt("…","start")],speaker="{leader}"),
   node("attack","{leader} обнажает оружие. «Значит, война. Я ждал этого тысячу лет».",[opt("К бою!")],speaker="{leader}",effects=[{"startWar":True}])])
 dlg("dlg_ruins",[node("start","Среди обломков — знаки, высеченные слишком ровно, будто их отпечатали. Один повторяется снова и снова: круг, разрезанный линией.",[opt("Срисовать знаки",effects=[{"xp":5}]),opt("Уйти")],speaker="Руины")])
 dlg("dlg_oddity",[node("start","Камни лежат идеальной сеткой, и между ними не растёт ни травинки. Вы моргаете — и сетка смещается на шаг.",[opt("Потрогать камень",effects=[{"hint":"oddity_grid"},{"message":"Камень тёплый, как живой."}]),opt("Уйти")],speaker="Странное место")])
@@ -146,5 +148,44 @@ ev("ev_awaken","awaken","dlg_awaken",once=False)
 ev("ev_after_jump","after_jump","dlg_after_jump",chance=0.5)
 ev("ev_echo","monthly","dlg_hint_echo",chance=0.03,once=False,cooldown=5,conds=[{"minEra":"city_states"}])
 ev("ev_smoke_voice","monthly","dlg_smoke_voice",chance=0.08,conds=[{"inSmoke":True}])
+
+# ---------- Фоновые события: мир живёт и помнит ----------
+dlg("dlg_quarrel",[node("start","{companion} спорит с другими у костра: добычу поделили несправедливо. Все смотрят на вас.",[
+  opt("Встать на сторону {companion}","sided",effects=[{"relation":10}]),
+  opt("Рассудить по справедливости",check={"kind":"skill","skill":"speech","difficulty":0.4,"full":"fair","partial":"fair","fail":"messy","crit":"messy"}),
+  opt("Пусть разбираются сами","ignored",effects=[{"relation":-5}])],speaker="{companion}"),
+  node("sided","{companion} доволен. Остальные запомнили, кого вы выбрали.",[opt("…")],effects=[{"allLoyalty":-2}]),
+  node("fair","Вы делите добычу поровну. Даже {companion} кивает.",[opt("…")],effects=[{"relation":3},{"xp":10},{"allLoyalty":2}]),
+  node("messy","Спор только разгорелся. {companion} уходит обиженным.",[opt("…")],effects=[{"relation":-8}]),
+  node("ignored","Ссора стихает сама. Осадок остаётся.",[opt("…")])])
+dlg("dlg_festival",[node("start","Урожай в {city} собран. Люди просят праздника — костры, песни, мясо на вертелах.",[
+  opt("Устроить пир (40 еды)",conds=[{"item":"food","itemMin":40}],effects=[{"item":"food","amount":-40},{"allLoyalty":8},{"rep":2},{"chronicle":"Год {year}. В {city} гуляли три дня."}]),
+  opt("Сберечь запасы на зиму",effects=[{"allLoyalty":-2}])],speaker="{city}")])
+dlg("dlg_plague",[node("start","В {city} мор. Люди кашляют кровью, рынок пуст.",[
+  opt("Закрыть город и ждать",effects=[{"loyalty":-10},{"chronicle":"Год {year}. {city} закрыт на карантин."}]),
+  opt("Отправить знахарей во главе с {companion}",conds=[{"companionsMin":1}],effects=[{"relation":5},{"rep":3},{"loyalty":5}]),
+  opt("Исцелить ресурсом жизни (2)",conds=[{"item":"essence","itemMin":2,"tabooActive":False}],effects=[{"item":"essence","amount":-2},{"allLoyalty":10},{"setFlag":"healer_king"},{"chronicle":"Год {year}. Правитель исцелил {city} ресурсом жизни."}]),
+  opt("Исцелить ресурсом жизни вопреки табу (2)",conds=[{"item":"essence","itemMin":2,"tabooActive":True}],effects=[{"item":"essence","amount":-2},{"allLoyalty":6},{"setFlag":"taboo_broken"}])],speaker="Мор")])
+dlg("dlg_grudge",[node("start","Внуки того, кому вы когда-то отказали в ресурсе жизни, подняли бунт в {city}. «Он молод, а наш дед сгнил в земле!»",[
+  opt("Покаяться публично",effects=[{"rep":-3},{"allLoyalty":5},{"clearFlag":"refused_dying_friend"}]),
+  opt("Подавить бунт",effects=[{"allLoyalty":-8},{"loyalty":-10}]),
+  opt("Откупиться (30 еды)",conds=[{"item":"food","itemMin":30}],effects=[{"item":"food","amount":-30},{"loyalty":5}])],speaker="Бунт")])
+dlg("dlg_legend",[node("start","Пока вы спали, о вас слагали легенды: «Он вернётся, когда будет нужен». Люди падают ниц, увидев вас.",[
+  opt("Принять поклонение",effects=[{"influence":15},{"setFlag":"worshipped"},{"chronicle":"Год {year}. {hero} вернулся. Народ встретил его как бога."}]),
+  opt("«Я такой же человек, как вы»",effects=[{"rep":4},{"allLoyalty":3}])],speaker="Легенда")])
+dlg("dlg_star",[node("start","Над {capital} зажглась неподвижная звезда. Она не движется вместе с другими. Учёные спорят, жрецы молятся.",[
+  opt("Велеть изучать",effects=[{"science":40},{"hint":"fixed_star"}]),
+  opt("Объявить знамением своей власти",effects=[{"influence":10},{"hint":"fixed_star"}])],speaker="Небо")])
+dlg("dlg_raid_warning",[node("start","Гонец из {city}: на дорогах видели разбойников. Люди боятся выходить в поле.",[
+  opt("Я разберусь сам",effects=[{"allLoyalty":2},{"message":"Найдите лагерь разбойников (M — карта) и сожгите его."}]),
+  opt("Пусть гарнизон справится",effects=[{"loyalty":-3}])],speaker="Гонец")])
+
+ev("ev_quarrel","monthly","dlg_quarrel",chance=0.03,once=False,cooldown=6,conds=[{"companionsMin":2}])
+ev("ev_festival","monthly","dlg_festival",chance=0.03,once=False,cooldown=5,conds=[{"hasNation":True,"item":"food","itemMin":40}])
+ev("ev_plague","monthly","dlg_plague",chance=0.012,once=False,cooldown=20,conds=[{"minEra":"city_states"}])
+ev("ev_grudge","after_jump","dlg_grudge",chance=0.8,conds=[{"flag":"refused_dying_friend","hasNation":True}])
+ev("ev_legend","after_jump","dlg_legend",conds=[{"flag":"legend_of_return","hasNation":True}])
+ev("ev_star","monthly","dlg_star",chance=0.02,conds=[{"minEra":"city_states"}])
+ev("ev_raid_warning","monthly","dlg_raid_warning",chance=0.02,once=False,cooldown=8,conds=[{"hasNation":True,"cityStageMin":"village"}])
 json.dump({"dialogues":D,"events":E},open(sys.argv[1],"w",encoding="utf-8"),ensure_ascii=False,indent=1)
 print(len(D),"dialogues",len(E),"events")

@@ -240,6 +240,7 @@ namespace Immortal.Core.Narrative
                 case "rival_leader": foreach (var n in s.State.Nations) if (!n.IsPlayer) return n.Leader.Name; return "сосед";
                 case "echo": return SimulationHints.EchoLine(s);
                 case "suspicion": return SimulationHints.LeaderSuspicion(s, nation);
+                case "leader_memory": return LeaderMemory(nation);
                 case "years_dead": return comp != null && !comp.Alive ? $"{(s.State.Months - comp.DeathMonths) / 12:0}" : "0";
                 case "relation": return comp != null ? RelationWord(comp.Relation) : npc != null ? RelationWord(npc.InheritedRelation) : "";
                 case "memory_ruins": return s.State.Hero.Memories.Contains("ruins_carvings") ? "Вы помните те же знаки в руинах." : "Знаки ничего вам не говорят.";
@@ -248,6 +249,25 @@ namespace Immortal.Core.Narrative
                 case "lineage_line": return npc != null && npc.InheritedRelation < -10 ? $"Мой предок {npc.AncestorName} умер с обидой на тебя." : $"Мне рассказывали, что {npc?.AncestorName} шёл за тобой до конца.";
                 default: return "{" + key + "}";
             }
+        }
+
+        /// <summary>Что бессмертный соперник помнит о герое — собирается из его личной памяти.</summary>
+        static string LeaderMemory(NationState n)
+        {
+            if (n == null) return "";
+            var parts = new List<string>();
+            foreach (var m in n.Leader.Memories)
+                switch (m)
+                {
+                    case "hero_cleared_bandits": parts.Add("Ты очистил дороги от разбойников — мои караваны это помнят."); break;
+                    case "hero_killed_leader": parts.Add("Ты убил одного из нас. Бессмертные такого не прощают."); break;
+                    case "hero_declared_war": parts.Add("Ты первым поднял на меня оружие."); break;
+                    case "hero_stole_city": parts.Add("Ты увёл у меня город, пока я смотрел в другую сторону."); break;
+                    case "hero_betrayed": parts.Add("Ты нарушил слово."); break;
+                    case "parent_fell": parts.Add("Моего отца не стало при тебе. Я вырос на рассказах о тебе."); break;
+                }
+            if (parts.Count == 0) return "«Я помню тебя изгнанником без имени. Посмотри, кем ты стал».";
+            return "«" + string.Join(" ", parts) + "»";
         }
 
         public static string RelationWord(float r) => r > 50 ? "предан вам" : r > 15 ? "дружелюбен" : r > -15 ? "сдержан" : r > -50 ? "обижен" : "враждебен";
@@ -315,6 +335,7 @@ namespace Immortal.Core.Narrative
                 if (war != c.atWar.Value) return false;
             }
             if (c.leaderAlive.HasValue && (nation == null || nation.Leader.Alive != c.leaderAlive.Value)) return false;
+            if (c.leaderMemory != null && (nation == null || !nation.Leader.Memories.Contains(c.leaderMemory))) return false;
             if (c.cityStageMin != null)
             {
                 var cap = s.Capital(s.PlayerNation);

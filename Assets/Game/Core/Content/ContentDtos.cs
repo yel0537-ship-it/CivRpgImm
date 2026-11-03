@@ -343,6 +343,7 @@ namespace Immortal.Core.Content
         public float attrMin, skillMin, energy, relationMin = -999, hints = -1, reputationMin = -999;
         public bool? tabooActive;
         public bool? hasWeapon, hasHorse, governor;
+        public string leaderMemory;
         public int companionsMin = -1, techsMin = -1;
         public float capitalPopMin = -1;
         public bool? hasNeedItem, questDone, questStarted, rejuvenation, hasNation, atWar, leaderAlive, notTaboo, inSmoke;

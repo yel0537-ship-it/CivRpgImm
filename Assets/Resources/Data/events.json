@@ -500,6 +500,10 @@
        }
       },
       {
+       "text": "«Ты меня помнишь?»",
+       "next": "memory"
+      },
+      {
        "text": "Напасть",
        "next": "attack"
       },
@@ -712,6 +716,17 @@
        "spawnCount": 3
       }
      ]
+    },
+    {
+     "id": "memory",
+     "text": "{leader} смотрит долго. {leader_memory}",
+     "options": [
+      {
+       "text": "…",
+       "next": "start"
+      }
+     ],
+     "speaker": "{leader}"
     },
     {
      "id": "attack",
@@ -1625,6 +1640,421 @@
      ]
     }
    ]
+  },
+  {
+   "id": "dlg_quarrel",
+   "title": "dlg_quarrel",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "{companion} спорит с другими у костра: добычу поделили несправедливо. Все смотрят на вас.",
+     "options": [
+      {
+       "text": "Встать на сторону {companion}",
+       "next": "sided",
+       "effects": [
+        {
+         "relation": 10
+        }
+       ]
+      },
+      {
+       "text": "Рассудить по справедливости",
+       "check": {
+        "kind": "skill",
+        "skill": "speech",
+        "difficulty": 0.4,
+        "full": "fair",
+        "partial": "fair",
+        "fail": "messy",
+        "crit": "messy"
+       }
+      },
+      {
+       "text": "Пусть разбираются сами",
+       "next": "ignored",
+       "effects": [
+        {
+         "relation": -5
+        }
+       ]
+      }
+     ],
+     "speaker": "{companion}"
+    },
+    {
+     "id": "sided",
+     "text": "{companion} доволен. Остальные запомнили, кого вы выбрали.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "allLoyalty": -2
+      }
+     ]
+    },
+    {
+     "id": "fair",
+     "text": "Вы делите добычу поровну. Даже {companion} кивает.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "relation": 3
+      },
+      {
+       "xp": 10
+      },
+      {
+       "allLoyalty": 2
+      }
+     ]
+    },
+    {
+     "id": "messy",
+     "text": "Спор только разгорелся. {companion} уходит обиженным.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ],
+     "effects": [
+      {
+       "relation": -8
+      }
+     ]
+    },
+    {
+     "id": "ignored",
+     "text": "Ссора стихает сама. Осадок остаётся.",
+     "options": [
+      {
+       "text": "…",
+       "next": "end"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "id": "dlg_festival",
+   "title": "dlg_festival",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Урожай в {city} собран. Люди просят праздника — костры, песни, мясо на вертелах.",
+     "options": [
+      {
+       "text": "Устроить пир (40 еды)",
+       "next": "end",
+       "conds": [
+        {
+         "item": "food",
+         "itemMin": 40
+        }
+       ],
+       "effects": [
+        {
+         "item": "food",
+         "amount": -40
+        },
+        {
+         "allLoyalty": 8
+        },
+        {
+         "rep": 2
+        },
+        {
+         "chronicle": "Год {year}. В {city} гуляли три дня."
+        }
+       ]
+      },
+      {
+       "text": "Сберечь запасы на зиму",
+       "next": "end",
+       "effects": [
+        {
+         "allLoyalty": -2
+        }
+       ]
+      }
+     ],
+     "speaker": "{city}"
+    }
+   ]
+  },
+  {
+   "id": "dlg_plague",
+   "title": "dlg_plague",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "В {city} мор. Люди кашляют кровью, рынок пуст.",
+     "options": [
+      {
+       "text": "Закрыть город и ждать",
+       "next": "end",
+       "effects": [
+        {
+         "loyalty": -10
+        },
+        {
+         "chronicle": "Год {year}. {city} закрыт на карантин."
+        }
+       ]
+      },
+      {
+       "text": "Отправить знахарей во главе с {companion}",
+       "next": "end",
+       "conds": [
+        {
+         "companionsMin": 1
+        }
+       ],
+       "effects": [
+        {
+         "relation": 5
+        },
+        {
+         "rep": 3
+        },
+        {
+         "loyalty": 5
+        }
+       ]
+      },
+      {
+       "text": "Исцелить ресурсом жизни (2)",
+       "next": "end",
+       "conds": [
+        {
+         "item": "essence",
+         "itemMin": 2,
+         "tabooActive": false
+        }
+       ],
+       "effects": [
+        {
+         "item": "essence",
+         "amount": -2
+        },
+        {
+         "allLoyalty": 10
+        },
+        {
+         "setFlag": "healer_king"
+        },
+        {
+         "chronicle": "Год {year}. Правитель исцелил {city} ресурсом жизни."
+        }
+       ]
+      },
+      {
+       "text": "Исцелить ресурсом жизни вопреки табу (2)",
+       "next": "end",
+       "conds": [
+        {
+         "item": "essence",
+         "itemMin": 2,
+         "tabooActive": true
+        }
+       ],
+       "effects": [
+        {
+         "item": "essence",
+         "amount": -2
+        },
+        {
+         "allLoyalty": 6
+        },
+        {
+         "setFlag": "taboo_broken"
+        }
+       ]
+      }
+     ],
+     "speaker": "Мор"
+    }
+   ]
+  },
+  {
+   "id": "dlg_grudge",
+   "title": "dlg_grudge",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Внуки того, кому вы когда-то отказали в ресурсе жизни, подняли бунт в {city}. «Он молод, а наш дед сгнил в земле!»",
+     "options": [
+      {
+       "text": "Покаяться публично",
+       "next": "end",
+       "effects": [
+        {
+         "rep": -3
+        },
+        {
+         "allLoyalty": 5
+        },
+        {
+         "clearFlag": "refused_dying_friend"
+        }
+       ]
+      },
+      {
+       "text": "Подавить бунт",
+       "next": "end",
+       "effects": [
+        {
+         "allLoyalty": -8
+        },
+        {
+         "loyalty": -10
+        }
+       ]
+      },
+      {
+       "text": "Откупиться (30 еды)",
+       "next": "end",
+       "conds": [
+        {
+         "item": "food",
+         "itemMin": 30
+        }
+       ],
+       "effects": [
+        {
+         "item": "food",
+         "amount": -30
+        },
+        {
+         "loyalty": 5
+        }
+       ]
+      }
+     ],
+     "speaker": "Бунт"
+    }
+   ]
+  },
+  {
+   "id": "dlg_legend",
+   "title": "dlg_legend",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Пока вы спали, о вас слагали легенды: «Он вернётся, когда будет нужен». Люди падают ниц, увидев вас.",
+     "options": [
+      {
+       "text": "Принять поклонение",
+       "next": "end",
+       "effects": [
+        {
+         "influence": 15
+        },
+        {
+         "setFlag": "worshipped"
+        },
+        {
+         "chronicle": "Год {year}. {hero} вернулся. Народ встретил его как бога."
+        }
+       ]
+      },
+      {
+       "text": "«Я такой же человек, как вы»",
+       "next": "end",
+       "effects": [
+        {
+         "rep": 4
+        },
+        {
+         "allLoyalty": 3
+        }
+       ]
+      }
+     ],
+     "speaker": "Легенда"
+    }
+   ]
+  },
+  {
+   "id": "dlg_star",
+   "title": "dlg_star",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Над {capital} зажглась неподвижная звезда. Она не движется вместе с другими. Учёные спорят, жрецы молятся.",
+     "options": [
+      {
+       "text": "Велеть изучать",
+       "next": "end",
+       "effects": [
+        {
+         "science": 40
+        },
+        {
+         "hint": "fixed_star"
+        }
+       ]
+      },
+      {
+       "text": "Объявить знамением своей власти",
+       "next": "end",
+       "effects": [
+        {
+         "influence": 10
+        },
+        {
+         "hint": "fixed_star"
+        }
+       ]
+      }
+     ],
+     "speaker": "Небо"
+    }
+   ]
+  },
+  {
+   "id": "dlg_raid_warning",
+   "title": "dlg_raid_warning",
+   "nodes": [
+    {
+     "id": "start",
+     "text": "Гонец из {city}: на дорогах видели разбойников. Люди боятся выходить в поле.",
+     "options": [
+      {
+       "text": "Я разберусь сам",
+       "next": "end",
+       "effects": [
+        {
+         "allLoyalty": 2
+        },
+        {
+         "message": "Найдите лагерь разбойников (M — карта) и сожгите его."
+        }
+       ]
+      },
+      {
+       "text": "Пусть гарнизон справится",
+       "next": "end",
+       "effects": [
+        {
+         "loyalty": -3
+        }
+       ]
+      }
+     ],
+     "speaker": "Гонец"
+    }
+   ]
   }
  ],
  "events": [
@@ -1799,6 +2229,99 @@
    "conds": [
     {
      "inSmoke": true
+    }
+   ]
+  },
+  {
+   "id": "ev_quarrel",
+   "trigger": "monthly",
+   "dialogue": "dlg_quarrel",
+   "chance": 0.03,
+   "once": false,
+   "cooldownYears": 6,
+   "conds": [
+    {
+     "companionsMin": 2
+    }
+   ]
+  },
+  {
+   "id": "ev_festival",
+   "trigger": "monthly",
+   "dialogue": "dlg_festival",
+   "chance": 0.03,
+   "once": false,
+   "cooldownYears": 5,
+   "conds": [
+    {
+     "hasNation": true,
+     "item": "food",
+     "itemMin": 40
+    }
+   ]
+  },
+  {
+   "id": "ev_plague",
+   "trigger": "monthly",
+   "dialogue": "dlg_plague",
+   "chance": 0.012,
+   "once": false,
+   "cooldownYears": 20,
+   "conds": [
+    {
+     "minEra": "city_states"
+    }
+   ]
+  },
+  {
+   "id": "ev_grudge",
+   "trigger": "after_jump",
+   "dialogue": "dlg_grudge",
+   "chance": 0.8,
+   "once": true,
+   "conds": [
+    {
+     "flag": "refused_dying_friend",
+     "hasNation": true
+    }
+   ]
+  },
+  {
+   "id": "ev_legend",
+   "trigger": "after_jump",
+   "dialogue": "dlg_legend",
+   "chance": 1.0,
+   "once": true,
+   "conds": [
+    {
+     "flag": "legend_of_return",
+     "hasNation": true
+    }
+   ]
+  },
+  {
+   "id": "ev_star",
+   "trigger": "monthly",
+   "dialogue": "dlg_star",
+   "chance": 0.02,
+   "once": true,
+   "conds": [
+    {
+     "minEra": "city_states"
+    }
+   ]
+  },
+  {
+   "id": "ev_raid_warning",
+   "trigger": "monthly",
+   "dialogue": "dlg_raid_warning",
+   "chance": 0.02,
+   "once": false,
+   "cooldownYears": 8,
+   "conds": [
+    {
+     "hasNation": true,
+     "cityStageMin": "village"
     }
    ]
   }

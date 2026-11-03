@@ -18,6 +18,9 @@
 | Добыча на земле | `Models/Loot` | id предмета, `equipment`, `resource` | `Models/Loot/essence.prefab` |
 | Снаряды | `Models/Projectiles` | id умения, `enemy_shot`, `mystic`, `default` | `Models/Projectiles/power_fireball.prefab` |
 | Эффекты | `Fx` | `hit`, `death`, `explosion`, `explosion_<умение>`, `slash_<умение>`, `levelup`, `rejuvenate`, `smoke_zone` | `Fx/explosion.prefab` |
+| Маркеры на земле | `Fx` | `area_marker` (зона удара, масштаб = радиус), `hover_ring`, `click_marker` | `Fx/area_marker.prefab` |
+| Погода | `Fx` | `weather_<регион>` (`weather_r_tundra`…), `weather_smoke` — следует за героем | `Fx/weather_r_tundra.prefab` |
+| Жители городов | `Models/Units` | `citizen` (иначе `npc`) — бродят между постройками, число растёт с населением | `Models/Units/citizen.prefab` |
 
 Запасные цепочки: спутник ищет `rec_ayna`, потом `companion`; правитель — `leader_arkhan`, потом `leader`;
 юнит без модели остаётся капсулой. Поэтому можно начать с одной общей модели (`companion`) и добавлять уникальные позже.
@@ -112,6 +115,17 @@
 ```
 Заглушки-синтез можно выключить в «Настройках» (тогда без файлов будет тишина).
 
-## 5. Интерфейс
+## 5. Портреты и иконки
+
+| Что | Путь | Где видно |
+|---|---|---|
+| Портрет собеседника | `Resources/Portraits/<id>` — `rec_ayna`, `leader_arkhan`, `leader`, `companion`, `npc`, `descendant`, `narrator`, `hero` | слева в окне диалога |
+| Иконки умений | `Resources/Icons/Abilities/<id умения>`, `dash` | панель умений 1–4 |
+| Иконки предметов | `Resources/Icons/Items/<id предмета>` | снаряжение (I) |
+| Иконки построек | `Resources/Icons/Buildings/<id постройки>` | Tab → Стройка |
+
+Любой формат картинки, импорт как Default/Sprite (2D). Нет файла — элемент просто без картинки.
+
+## 6. Интерфейс
 UI собирается из C# (`Assets/Game/Presentation/UI`). Цвета и шрифт — в `UiKit.cs` (`Ui.Bg`, `Ui.Gold`, `Ui.CyrillicFont`).
 Свой шрифт: положите `Resources/UI/Font.ttf` — он будет использован вместо системного (с поддержкой кириллицы).

@@ -51,7 +51,20 @@ namespace Immortal.Core.Narrative
         public static void Monthly(GameSession s)
         {
             if (s.State.Narrative.Active != null || s.InTimeJump) return;
-            Fire(s, "monthly", new DialogueState());
+            Fire(s, "monthly", RandomContext(s));
+        }
+
+        /// <summary>Контекст для фоновых событий: случайный живой спутник, свой город и соперник — чтобы события говорили о людях.</summary>
+        public static DialogueState RandomContext(GameSession s)
+        {
+            var ctx = new DialogueState();
+            var comps = s.State.Companions.FindAll(c => c.Alive && c.Role != CompanionRoles.Rebel);
+            if (comps.Count > 0) ctx.CompanionId = comps[s.Rng.NextInt(comps.Count)].Id;
+            var cities = s.State.Cities.FindAll(c => c.NationId != null && c.NationId == s.State.PlayerNationId);
+            if (cities.Count > 0) ctx.CityId = cities[s.Rng.NextInt(cities.Count)].Id;
+            var rivals = s.State.Nations.FindAll(n => !n.IsPlayer && !n.Destroyed);
+            if (rivals.Count > 0) ctx.NationId = rivals[s.Rng.NextInt(rivals.Count)].Id;
+            return ctx;
         }
 
         static DialogueState Copy(DialogueState c) => c == null ? new DialogueState() : new DialogueState

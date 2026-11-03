@@ -211,7 +211,9 @@ namespace Immortal.Core.Action
                 {
                     Kind = UnitKind.Leader, NationId = n.Id, Name = n.Leader.Name, Team = n.Team, Pos = s.Map.NearestWalkable(pos), Home = pos,
                     Hp = 420, MaxHp = 420, Damage = 18, Armor = 3, Speed = 4.5f, Radius = 0.6f, AttackRange = 1.8f, AggroRange = 14,
-                    Behavior = "melee", Ai = AiState.Wander, Windup = 0.7f, Recover = 0.5f, Boss = true, DefId = "leader"
+                    Behavior = "melee", Ai = AiState.Wander, Windup = 0.7f, Recover = 0.5f, Boss = true, DefId = "leader",
+                    // Бессмертный правитель — настоящий босс: агрессор идёт в натиск, остальные бьют по площади.
+                    Ability = n.Leader.Personality == "aggressor" ? "charge" : "boss_slam", AbilityCd = 3f
                 });
                 n.Leader.UnitId = u.Id;
             }

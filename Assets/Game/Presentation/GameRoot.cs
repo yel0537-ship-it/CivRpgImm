@@ -30,6 +30,7 @@ namespace Immortal.Presentation
         UIDocument _doc;
         Hud _hud;
         Screens _screens;
+        DevPanel _dev;
         float _acc;
         Vector2 _lastMove;
         bool _holdMove;
@@ -129,6 +130,7 @@ namespace Immortal.Presentation
             _screens = new Screens(this);
             root.Add(_hud.Root);
             root.Add(_screens.Root);
+            _dev = new DevPanel(root, () => Session, () => { _world.Bind(Session); _units.Bind(Session); _markers.Bind(Session); _ambience.Bind(Session); });
         }
 
         // ---------- IGameShell ----------
@@ -301,6 +303,7 @@ namespace Immortal.Presentation
         void HandleGlobalKeys()
         {
             if (GameInput.Down(GameInput.Key.F5)) Save("1");
+            if (GameInput.Down(GameInput.Key.F12)) _dev.Toggle();
             if (GameInput.Down(GameInput.Key.F9) && SaveSystem.Info("1") != null) { Load("1"); return; }
             if (Current == UiScreen.Dialogue) { int d = GameInput.DigitDown(); if (d > 0) _screens.ChooseByNumber(d); return; }
             if (Current == UiScreen.End || Current == UiScreen.Chronicle) return;

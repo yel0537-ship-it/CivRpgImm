@@ -20,7 +20,7 @@ namespace Immortal.Presentation
     /// </summary>
     public sealed class ScreenshotRunner : MonoBehaviour
     {
-        public static readonly string[] All = { "menu", "hud", "dialogue", "combat", "smoke", "map", "ruler", "city", "chronicle", "end" };
+        public static readonly string[] All = { "menu", "hud", "dialogue", "combat", "smoke", "map", "ruler", "city", "chronicle", "end", "journal", "interior", "help" };
         GameRoot _root;
         string _scenario, _shot, _dir;
 
@@ -141,6 +141,27 @@ namespace Immortal.Presentation
                     if (sc == "city") { s.Execute(new CloseChronicle()); Vision.Reveal(s.State, s.Map, cap.Pos, 60f); }
                     _root.StartSession(s);
                     if (sc == "chronicle") _root.ForceScreen(UiScreen.Chronicle);
+                    break;
+                }
+                case "journal":
+                {
+                    var s = Fresh();
+                    var npc = s.State.Npcs.First(); npc.QuestStarted = true; RecruitmentSystem.Observe(s, npc);
+                    _root.ForceScreen(UiScreen.Journal);
+                    break;
+                }
+                case "help": _root.ForceScreen(UiScreen.Help); break;
+                case "interior":
+                {
+                    var s = Fresh();
+                    s.Execute(new FoundCamp()); DialogueEngine.AutoResolve(s);
+                    var cap = s.Capital(s.PlayerNation);
+                    s.PlayerNation.Add("wood", 50); s.PlayerNation.Add("stone", 20);
+                    s.Execute(new Build(cap.Id, "workshop"));
+                    var b = cap.Buildings.First(x => x.DefId == "workshop");
+                    Immortal.Core.Action.InteractionSystem.InteractBuilding(s, cap, b.Slot);
+                    s.Events.Clear();
+                    s.Emit(new GameEvent { Type = GameEventType.OpenScreen, Id = "interior", Text = "workshop|" + cap.Id });
                     break;
                 }
                 case "end":

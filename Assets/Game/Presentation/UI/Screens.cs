@@ -13,7 +13,7 @@ using UnityEngine.UIElements;
 
 namespace Immortal.Presentation.UI
 {
-    public enum Screen { Menu, World, Map, Ruler, Dialogue, Chronicle, End, Inventory, Craft, Interior, Settings, Journal }
+    public enum Screen { Menu, World, Map, Ruler, Dialogue, Chronicle, End, Inventory, Craft, Interior, Settings, Journal, Help }
 
     /// <summary>То, что экраны просят у корня игры.</summary>
     public interface IGameShell
@@ -34,7 +34,7 @@ namespace Immortal.Presentation.UI
         readonly IGameShell _g;
         public readonly VisualElement Root;
         readonly Dictionary<Screen, VisualElement> _layers = new Dictionary<Screen, VisualElement>();
-        readonly VisualElement _dialogueBox, _menuBox, _endBox, _chronicleBox, _mapBox, _rulerBox, _invBox, _craftBox, _interiorBox, _settingsBox, _journalBox;
+        readonly VisualElement _dialogueBox, _menuBox, _endBox, _chronicleBox, _mapBox, _rulerBox, _invBox, _craftBox, _interiorBox, _settingsBox, _journalBox, _helpBox;
         string _dialogueKey;
         public string RulerTab = "city";
         public string RulerCityId;
@@ -64,6 +64,7 @@ namespace Immortal.Presentation.UI
             _interiorBox = Layer(Screen.Interior, new Color(0, 0, 0, 0.55f));
             _settingsBox = Layer(Screen.Settings, new Color(0.03f, 0.03f, 0.05f, 0.96f));
             _journalBox = Layer(Screen.Journal, new Color(0, 0, 0, 0.6f));
+            _helpBox = Layer(Screen.Help, new Color(0.03f, 0.03f, 0.05f, 0.96f));
         }
 
         VisualElement Layer(Screen s, Color bg)
@@ -94,6 +95,7 @@ namespace Immortal.Presentation.UI
                 case Screen.Interior: BuildInterior(); break;
                 case Screen.Settings: BuildSettings(); break;
                 case Screen.Journal: BuildJournal(); break;
+                case Screen.Help: BuildHelp(); break;
                 case Screen.Dialogue: _dialogueKey = null; RefreshDialogue(); break;
             }
         }
@@ -139,6 +141,7 @@ namespace Immortal.Presentation.UI
                 if (slot != "auto" && _g.Session != null && !_g.Session.State.GameOver) row.Add(Ui.Button("Сохранить сюда", () => { _g.Save(slot); BuildMenu(); }));
                 b.Add(row);
             }
+            b.Add(Ui.Button("Как играть", () => _g.SetScreen(Screen.Help)));
             b.Add(Ui.Button("Настройки", () => _g.SetScreen(Screen.Settings)));
             b.Add(Ui.Button("Выход", () => _g.Quit()));
             b.Add(Ui.Label("F5 — быстрое сохранение, F9 — быстрая загрузка (слот 1).", 13, Ui.Dim));
@@ -595,6 +598,23 @@ namespace Immortal.Presentation.UI
                 sv.Add(ar);
             }
             sv.Add(Ui.Label("Навыки: " + string.Join(", ", h.Skills.Select(kv => $"{HeroSystem.SkillName(kv.Key)} {kv.Value:0}")), 15));
+            var hu = s.HeroUnit;
+            sv.Add(Ui.Label($"Здоровье {hu?.MaxHp:0} · броня {HeroSystem.Armor(s):0.0} · урон оружия {HeroSystem.WeaponDamage(s):0.0} · скорость {MovementSystem.HeroSpeed(s):0.0} м/с · энергия {HeroSystem.MaxEnergy(s):0}", 14, Ui.Dim));
+            sv.Add(Ui.Label("Умения", 19, Ui.Gold, true));
+            var basic = HeroSystem.BasicAttack(s);
+            if (basic != null) sv.Add(Ui.Label($"ЛКМ — {basic.name}: урон ~{CombatSystem.ComputeDamage(s, hu, basic):0}", 14));
+            for (int slot = 1; slot <= 4; slot++)
+            {
+                var a = HeroSystem.AbilityInSlot(s, slot);
+                if (a == null) continue;
+                string extra = (a.requiresSmoke ? " · только в дыму" : "") + (a.energy > 0 ? $" · {a.energy:0} эн." : "") + $" · перезарядка {a.cooldown:0.#} с";
+                string dmg = a.damage > 0 ? $"урон ~{CombatSystem.ComputeDamage(s, hu, a):0}" : a.buffStat == "damage" ? $"+{a.buffValue * 100:0}% урона на {a.duration:0} с" : "";
+                var row = Ui.Row();
+                var ic = UiAssets.Icon("Abilities", a.id);
+                if (ic != null) row.Add(UiAssets.ImageOf(ic, 28));
+                row.Add(Ui.Label($"{slot} — {a.name}: {dmg}{extra}. {a.description}", 14, slot == 4 ? Ui.Mystic : Ui.Text));
+                sv.Add(row);
+            }
             sv.Add(Ui.Label($"Опыт {h.Xp}/{s.Balance.hero.xpPerPoint} · репутация {h.Reputation:0} · поражений {h.Defeats}", 14, Ui.Dim));
             if (h.RejuvenationUnlocked)
                 sv.Add(Ui.Button($"Омолодиться ({s.Balance.essence.rejuvenateCost} ресурса → +{s.Balance.essence.rejuvenateYears:0} лет; часть навыка и воспоминаний уйдёт)", () => Exec(new Rejuvenate(), BuildInventory), HeroSystem.EssenceAvailable(s) >= s.Balance.essence.rejuvenateCost));
@@ -645,6 +665,36 @@ namespace Immortal.Presentation.UI
                 sv.Add(row);
             }
             b.Add(Ui.Button("Закрыть (C)", () => _g.SetScreen(Screen.World)));
+        }
+
+        // ---------- Как играть ----------
+        void BuildHelp()
+        {
+            var b = _helpBox; b.Clear();
+            b.style.width = 1000;
+            b.Add(Title("Как играть"));
+            var sv = Ui.Scroll(680); b.Add(sv);
+            void H(string t) => sv.Add(Ui.Label(t, 19, Ui.Gold, true));
+            void P(string t) => sv.Add(Ui.Label(t, 15));
+            H("Путь");
+            P("Вы — изгнанник, который почти не стареет. Соберите сырьё, сделайте оружие, уговорите людей пойти за вами, разожгите костёр (F) — и стоянка начнёт расти: деревня, посёлок, город-государство, столица царства. Вокруг растут соперничающие нации с такими же бессмертными правителями.");
+            H("Управление");
+            P("ЛКМ по земле — идти (удержание — следовать за курсором), WASD — движение. ЛКМ по врагу — атаковать, по человеку — говорить, по дереву или камню — собирать, по постройке — войти.");
+            P("1–3 — умения оружия в сторону курсора, 4 — сила эпохи (только в дыму), Пробел — рывок. R — конь, F — лагерь / сдать добычу у костра.");
+            P("I — снаряжение и атрибуты, C — ремесло, J — журнал, M — карта (и быстрые перемещения по дорогам), Tab — меню правителя, T — ускорить время вне боя, Esc — меню, F5/F9 — сохранить/загрузить.");
+            H("Люди");
+            P("У каждого человека есть нужда, недоверие и характер. «Присмотреться» раскрывает их и повышает шанс. Дар (особенно нужной вещи), хитрость, помощь с бедой или давление — у каждого подхода свой риск. Неудача — человек ненадолго закроется; провал — станет врагом.");
+            P("Спутники стареют и умирают. Их потомки живут в ваших городах и помнят, как вы обошлись с их предками.");
+            H("Бой");
+            P("Враги показывают замах красным сектором, а удары по площади — кругом на земле: успейте отойти или прервать рывком. В мистическом дыму почти ничего не видно, зато там добывается мистический ресурс.");
+            P("После поражения вы не умираете — вы засыпаете на десятилетия. Игра кончается только смертью от старости.");
+            H("Бессмертие");
+            P("Мистический ресурс омолаживает (I → «Омолодиться»), но каждый раз уходит часть навыка и воспоминаний. Он же нужен науке и последним чудесам. Решите, кому он принадлежит: только правителю или всем.");
+            H("Время");
+            P("Минута — месяц. На переломах эпох и из меню правителя можно перескочить через десятилетия: мир проживёт их сам, хроника расскажет, что случилось.");
+            H("Победа");
+            P("Захватите столицы соперников, превзойдите их влиянием, постройте Шпиль вечности — или Зеркало небес, и узнайте правду о мире.");
+            b.Add(Ui.Button("Назад", () => _g.SetScreen(_g.Session != null && !_g.Session.State.GameOver ? Screen.World : Screen.Menu)));
         }
 
         // ---------- Журнал ----------

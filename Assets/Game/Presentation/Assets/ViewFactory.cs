@@ -19,6 +19,7 @@ namespace Immortal.Presentation
         public string WeaponDefId;
         public GameObject Mount;
         public Color BaseColor;
+        public Color[] BaseColors;
         public float Emission;
         public float Punch;
     }
@@ -90,36 +91,77 @@ namespace Immortal.Presentation
                 return rig;
             }
 
-            // Примитив: капсула (или «четвероногий» силуэт).
-            bool quadruped = u.Kind == UnitKind.Animal || (u.DefId != null && (u.DefId.StartsWith("wolf") || u.DefId == "bear" || u.DefId == "shade_beast"));
-            Transform body;
-            if (quadruped)
-            {
-                var b = Look.Prim(PrimitiveType.Capsule, rig.Root.transform, color, new Vector3(0, 0.55f * scale, 0), new Vector3(0.7f, 0.75f, 0.7f) * scale, false, "body");
-                b.transform.localRotation = Quaternion.Euler(90, 0, 0);
-                Look.Prim(PrimitiveType.Sphere, b.transform, color * 0.85f, new Vector3(0, 0.95f, -0.15f), new Vector3(0.7f, 0.45f, 0.6f), false, "head");
-                body = b.transform; rig.Height = 1.2f * scale;
-            }
-            else
-            {
-                var b = Look.Prim(PrimitiveType.Capsule, rig.Root.transform, color, new Vector3(0, 0.9f * scale, 0), new Vector3(0.8f, 0.9f, 0.8f) * scale, false, "body");
-                body = b.transform;
-                Look.Prim(PrimitiveType.Cube, body, color * 0.6f, new Vector3(0, 0.45f, 0.42f), new Vector3(0.35f, 0.15f, 0.25f), false, "face");
-                if (u.Kind == UnitKind.Leader || u.Boss)
-                    Look.Prim(PrimitiveType.Cube, body, new Color(1f, 0.85f, 0.2f), new Vector3(0, 1.15f, 0), new Vector3(0.6f, 0.2f, 0.6f), false, "crown");
-                var hand = new GameObject("hand_r").transform;
-                hand.SetParent(body, false);
-                hand.localPosition = new Vector3(0.55f, 0.05f, 0.25f);
-                rig.Hand = hand;
-                rig.Height = 1.8f * scale;
-            }
+            // Примитив: «кукла» из туловища, головы и конечностей на шарнирах (их качает ProceduralAnimator).
+            bool quadruped = u.Kind == UnitKind.Animal || (u.DefId != null && (u.DefId.StartsWith("wolf") || u.DefId == "bear" || u.DefId == "shade_beast" || u.DefId == "boar"));
+            Transform body = quadruped ? BuildQuadruped(rig.Root.transform, color, scale) : BuildHumanoid(rig.Root.transform, color, scale, u, out rig.Hand);
+            rig.Height = (quadruped ? 1.25f : 1.95f) * scale;
+            if (u.Kind == UnitKind.Spirit)
+                foreach (var r in body.GetComponentsInChildren<Renderer>()) Look.SetColor(r, color, 0.5f);
             rig.Model = body;
             rig.Renderers = body.GetComponentsInChildren<Renderer>();
+            rig.BaseColors = new Color[rig.Renderers.Length];
+            var mpb = new MaterialPropertyBlock();
+            for (int i = 0; i < rig.Renderers.Length; i++) { rig.Renderers[i].GetPropertyBlock(mpb); rig.BaseColors[i] = mpb.GetColor(Look.ColorId); }
             rig.Emission = u.Kind == UnitKind.Spirit ? 0.5f : 0f;
             var proc = rig.Root.AddComponent<ProceduralAnimator>();
             proc.Init(body, quadruped);
             rig.Animator = proc;
             return rig;
+        }
+
+        static readonly Color Skin = new Color(0.85f, 0.68f, 0.55f);
+
+        static Transform Pivot(Transform parent, string name, Vector3 pos)
+        {
+            var t = new GameObject(name).transform;
+            t.SetParent(parent, false);
+            t.localPosition = pos;
+            return t;
+        }
+
+        public static Transform BuildHumanoid(Transform root, Color color, float s, Unit u, out Transform hand)
+        {
+            var body = Pivot(root, "body", new Vector3(0, 0.95f * s, 0));
+            body.localScale = Vector3.one * s;
+            bool spirit = u.Kind == UnitKind.Spirit;
+            var head = spirit ? color * 1.2f : Skin;
+            Look.Prim(PrimitiveType.Capsule, body, color, new Vector3(0, 0.36f, 0), new Vector3(0.55f, 0.42f, 0.38f), false, "torso");
+            Look.Prim(PrimitiveType.Sphere, body, head, new Vector3(0, 0.98f, 0), Vector3.one * 0.36f, false, "head");
+            Look.Prim(PrimitiveType.Cube, body, color * 0.55f, new Vector3(0, 0.98f, 0.16f), new Vector3(0.22f, 0.07f, 0.08f), false, "eyes");
+            if (u.Kind == UnitKind.Leader || u.Boss)
+                Look.Prim(PrimitiveType.Cube, body, new Color(1f, 0.85f, 0.2f), new Vector3(0, 1.2f, 0), new Vector3(0.34f, 0.1f, 0.34f), false, "crown");
+            if (u.Kind == UnitKind.Hero)
+                Look.Prim(PrimitiveType.Cube, body, color * 0.7f, new Vector3(0, 0.38f, -0.2f), new Vector3(0.5f, 0.75f, 0.05f), false, "cape");
+            var limb = color * 0.85f;
+            foreach (var side in new[] { -1, 1 })
+            {
+                var arm = Pivot(body, side < 0 ? "arm_l" : "arm_r", new Vector3(0.33f * side, 0.66f, 0));
+                Look.Prim(PrimitiveType.Capsule, arm, limb, new Vector3(0, -0.3f, 0), new Vector3(0.14f, 0.3f, 0.14f), false, "arm");
+                Look.Prim(PrimitiveType.Sphere, arm, head, new Vector3(0, -0.6f, 0), Vector3.one * 0.13f, false, "fist");
+                var leg = Pivot(body, side < 0 ? "leg_l" : "leg_r", new Vector3(0.13f * side, 0.02f, 0));
+                Look.Prim(PrimitiveType.Capsule, leg, color * 0.6f, new Vector3(0, -0.45f, 0), new Vector3(0.17f, 0.43f, 0.17f), false, "leg");
+            }
+            hand = Pivot(body.Find("arm_r"), "hand_r", new Vector3(0, -0.62f, 0.05f));
+            return body;
+        }
+
+        static Transform BuildQuadruped(Transform root, Color color, float s)
+        {
+            var body = Pivot(root, "body", new Vector3(0, 0.62f * s, 0));
+            body.localScale = Vector3.one * s;
+            var torso = Look.Prim(PrimitiveType.Capsule, body, color, Vector3.zero, new Vector3(0.62f, 0.62f, 0.62f), false, "torso");
+            torso.transform.localRotation = Quaternion.Euler(90, 0, 0);
+            Look.Prim(PrimitiveType.Sphere, body, color * 0.9f, new Vector3(0, 0.22f, 0.72f), new Vector3(0.42f, 0.38f, 0.48f), false, "head");
+            Look.Prim(PrimitiveType.Cube, body, color * 0.5f, new Vector3(0, 0.18f, 0.98f), new Vector3(0.16f, 0.12f, 0.12f), false, "snout");
+            Look.Prim(PrimitiveType.Capsule, body, color * 0.8f, new Vector3(0, 0.15f, -0.72f), new Vector3(0.08f, 0.22f, 0.08f), false, "tail").transform.localRotation = Quaternion.Euler(-50, 0, 0);
+            int i = 0;
+            foreach (var z in new[] { 0.42f, -0.42f })
+            foreach (var x in new[] { -0.2f, 0.2f })
+            {
+                var leg = Pivot(body, "leg" + (i++), new Vector3(x, -0.1f, z));
+                Look.Prim(PrimitiveType.Capsule, leg, color * 0.7f, new Vector3(0, -0.28f, 0), new Vector3(0.14f, 0.28f, 0.14f), false, "leg");
+            }
+            return body;
         }
 
         static float MeasureHeight(Renderer[] rs, Transform root, float fallback)
@@ -158,15 +200,16 @@ namespace Immortal.Presentation
         }
 
         /// <summary>Вспышка попадания: у примитивов — белый цвет, у моделей — короткий «удар» масштабом.</summary>
-        public static void ApplyFlash(UnitRig rig, float flash, Color current)
+        public static void ApplyFlash(UnitRig rig, float flash, bool dead)
         {
-            if (rig.IsPrefab) return;
-            foreach (var r in rig.Renderers)
+            if (rig.IsPrefab || rig.Renderers == null) return;
+            for (int i = 0; i < rig.Renderers.Length; i++)
             {
-                if (r == null || r.gameObject.name == "weapon") continue;
-                bool isBody = r.transform == rig.Model;
-                if (!isBody) continue;
-                Look.SetColor(r, flash > 0 ? Color.white : current, flash > 0 ? 1.5f : rig.Emission);
+                var r = rig.Renderers[i];
+                if (r == null) continue;
+                var c = rig.BaseColors != null && i < rig.BaseColors.Length ? rig.BaseColors[i] : rig.BaseColor;
+                if (flash > 0) Look.SetColor(r, Color.white, 1.5f);
+                else Look.SetColor(r, dead ? c * 0.4f : c, rig.Emission);
             }
         }
 

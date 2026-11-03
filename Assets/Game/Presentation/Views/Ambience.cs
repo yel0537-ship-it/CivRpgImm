@@ -88,8 +88,8 @@ namespace Immortal.Presentation
             {
                 go = new GameObject("citizen");
                 go.transform.SetParent(_root, false);
-                var body = Look.Prim(PrimitiveType.Capsule, go.transform, tint, new Vector3(0, 0.75f, 0), new Vector3(0.55f, 0.75f, 0.55f));
-                var pa = go.AddComponent<ProceduralAnimator>(); pa.Init(body.transform, false); anim = pa;
+                var body = ViewFactory.BuildHumanoid(go.transform, tint, 0.85f, new Unit { Kind = UnitKind.Npc }, out _);
+                var pa = go.AddComponent<ProceduralAnimator>(); pa.Init(body, false); anim = pa;
             }
             var start = _world.Ground(c.Pos + new Vec2((float)_rnd.NextDouble() * 6 - 3, (float)_rnd.NextDouble() * 6 - 3));
             go.transform.position = start;

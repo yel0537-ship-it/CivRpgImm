@@ -65,15 +65,18 @@ namespace Immortal.Presentation
     }
 
     /// <summary>
-    /// Процедурная анимация примитивов: шаг с покачиванием, дыхание, наклон на замахе, выпад при ударе,
-    /// вздрагивание при попадании, падение при смерти, наклоны при сборе.
+    /// Процедурная анимация «кукол» из примитивов: шаг (качание ног и рук), дыхание, наклон и занесённая рука на замахе,
+    /// выпад и взмах при ударе, вздрагивание при попадании, падение при смерти, наклоны при сборе.
+    /// Конечности ищутся по именам arm_l/arm_r/leg_l/leg_r (четвероногие — leg0..leg3); у моделей без них качается только тело.
     /// </summary>
     public sealed class ProceduralAnimator : MonoBehaviour, IUnitAnimator
     {
-        public Transform Pivot;      // что качаем (тело)
+        public Transform Pivot;
         public float BaseY;
         public bool Quadruped;
-        float _phase, _attack, _hit, _cast, _death;
+        Transform _armL, _armR, _legL, _legR;
+        readonly Transform[] _legs = new Transform[4];
+        float _phase, _attack, _hit, _cast, _death, _walk;
         Vector3 _baseScale = Vector3.one;
 
         public void Init(Transform pivot, bool quadruped)
@@ -81,38 +84,58 @@ namespace Immortal.Presentation
             Pivot = pivot; Quadruped = quadruped;
             BaseY = pivot.localPosition.y;
             _baseScale = pivot.localScale;
+            _armL = pivot.Find("arm_l"); _armR = pivot.Find("arm_r"); _legL = pivot.Find("leg_l"); _legR = pivot.Find("leg_r");
+            for (int i = 0; i < 4; i++) _legs[i] = pivot.Find("leg" + i);
         }
 
         public void Tick(in UnitAnimState st, float dt)
         {
             if (Pivot == null) return;
-            float speed = Mathf.Min(st.Speed, 10f);
-            _phase += dt * (3f + speed * 1.6f);
-            _attack = Mathf.Max(0, _attack - dt * 4f);
+            float speed = Mathf.Min(st.Speed, 12f);
+            _walk = Mathf.MoveTowards(_walk, Mathf.Clamp01(speed / 4f), dt * 4f);
+            _phase += dt * (2f + speed * 1.7f);
+            _attack = Mathf.Max(0, _attack - dt * 3.5f);
             _hit = Mathf.Max(0, _hit - dt * 6f);
-            _cast = Mathf.Max(0, _cast - dt * 3f);
+            _cast = Mathf.Max(0, _cast - dt * 2.5f);
             _death = st.Dead ? Mathf.Min(1f, _death + dt * 2.5f) : 0f;
 
-            float bob = speed > 0.3f ? Mathf.Abs(Mathf.Sin(_phase)) * 0.12f : Mathf.Sin(_phase * 0.5f) * 0.02f;
-            float lean = 0f;            // градусы вперёд
-            float side = speed > 0.3f ? Mathf.Sin(_phase) * 4f : 0f;
-            if (st.Windup) lean -= 8f + st.WindupProgress * 12f; // отклон назад перед ударом
-            lean += _attack * 28f;
-            if (st.Gather) lean += 25f + Mathf.Sin(_phase * 2f) * 10f;
-            lean += _cast * 10f;
-            if (Quadruped) lean *= 0.4f;
+            float swing = Mathf.Sin(_phase) * 35f * _walk;
+            float bob = Mathf.Abs(Mathf.Sin(_phase)) * 0.08f * _walk + Mathf.Sin(_phase * 0.4f) * 0.015f;
+            float lean = 6f * _walk;
+            if (st.Windup) lean -= 6f + st.WindupProgress * 8f;
+            lean += _attack * 18f;
+            if (st.Gather) lean += 28f + Mathf.Sin(_phase * 2.5f) * 8f;
+            if (Quadruped) lean *= 0.3f;
 
-            var squash = 1f - _hit * 0.18f;
+            float squash = 1f - _hit * 0.15f;
             Pivot.localScale = new Vector3(_baseScale.x * (2f - squash), _baseScale.y * squash, _baseScale.z * (2f - squash));
             float baseY = BaseY + (st.Mounted ? 0.75f : 0f);
             if (_death > 0)
             {
-                Pivot.localRotation = Quaternion.Euler((Quadruped ? 90f : 0f) + 0f, 0, 85f * _death);
+                Pivot.localRotation = Quaternion.Euler(0, 0, 85f * _death);
                 Pivot.localPosition = new Vector3(0, Mathf.Lerp(baseY, baseY * 0.35f, _death), 0);
                 return;
             }
-            Pivot.localPosition = new Vector3(0, baseY + bob + _cast * 0.25f, _attack * 0.35f);
-            Pivot.localRotation = Quaternion.Euler((Quadruped ? 90f : 0f) + lean, 0, side);
+            Pivot.localPosition = new Vector3(0, baseY + bob + _cast * 0.2f, _attack * 0.3f);
+            Pivot.localRotation = Quaternion.Euler(lean, 0, Mathf.Sin(_phase) * 3f * _walk);
+
+            if (Quadruped)
+            {
+                for (int i = 0; i < 4; i++)
+                    if (_legs[i] != null) _legs[i].localRotation = Quaternion.Euler(((i == 0 || i == 3) ? swing : -swing) * 0.9f, 0, 0);
+                return;
+            }
+            float legSwing = st.Mounted ? 0f : swing;
+            if (_legL != null) _legL.localRotation = Quaternion.Euler(legSwing, 0, st.Mounted ? -25f : 0);
+            if (_legR != null) _legR.localRotation = Quaternion.Euler(-legSwing, 0, st.Mounted ? 25f : 0);
+            // Правая рука: замах назад-вверх, удар вперёд, сбор — вниз к земле.
+            float armR = -swing * 0.8f, armL = swing * 0.8f;
+            if (st.Windup) armR = -60f - st.WindupProgress * 90f;
+            if (_attack > 0) armR = Mathf.Lerp(30f, -150f, _attack);
+            if (st.Gather) { armR = 60f + Mathf.Sin(_phase * 2.5f) * 25f; armL = 50f; }
+            if (_cast > 0) { armR = -150f * _cast; armL = -150f * _cast; }
+            if (_armR != null) _armR.localRotation = Quaternion.Euler(armR, 0, 8f);
+            if (_armL != null) _armL.localRotation = Quaternion.Euler(armL, 0, -8f);
         }
 
         public void Fire(AnimEvent e)

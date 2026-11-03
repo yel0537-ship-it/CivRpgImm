@@ -17,6 +17,7 @@ namespace Immortal.Presentation
             public Transform HpBack, HpFill, Telegraph;
             public Renderer TelegraphR, HpFillR;
             public float Flash;
+            public bool Flashed, DeadTint;
             public bool WasDead;
             public Vector3 LastPos;
             public float Speed;
@@ -181,8 +182,8 @@ namespace Immortal.Presentation
                 }
 
                 // Вспышка попадания.
-                if (v.Flash > 0) { v.Flash -= dt; ViewFactory.ApplyFlash(rig, 1, rig.BaseColor); }
-                else ViewFactory.ApplyFlash(rig, 0, u.Ai == AiState.Dead ? rig.BaseColor * 0.4f : rig.BaseColor);
+                if (v.Flash > 0) { v.Flash -= dt; ViewFactory.ApplyFlash(rig, 1, false); v.Flashed = true; }
+                else if (v.Flashed || st.Dead != v.DeadTint) { ViewFactory.ApplyFlash(rig, 0, st.Dead); v.Flashed = false; v.DeadTint = st.Dead; }
                 if (rig.IsPrefab && rig.Punch > 0)
                 {
                     rig.Punch -= dt * 6f;

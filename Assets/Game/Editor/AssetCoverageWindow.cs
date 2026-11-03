@@ -38,7 +38,7 @@ namespace Immortal.EditorTools
             }
             foreach (var s in AssetKeys.Audio(db))
             {
-                string folder = s.Category == "sfx" ? "Audio/Sfx/" : s.Category == "music" ? "Audio/Music/" : "Audio/Ambient/";
+                string folder = s.Category == "sfx" ? "Audio/Sfx/" : s.Category == "music" ? "Audio/Music/" : s.Category == "voice" ? "Audio/Voice/" : "Audio/Ambient/";
                 bool found = Resources.Load<AudioClip>(folder + s.Id) != null || Resources.Load<AudioClip>(folder + s.Id + "_1") != null;
                 _rows.Add((s, found, folder + s.Id));
             }

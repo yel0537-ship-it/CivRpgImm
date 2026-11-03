@@ -42,6 +42,9 @@ namespace Immortal.Presentation.UI
         public bool WorkshopMode;
         /// <summary>Вызывается при смене масштаба интерфейса в настройках.</summary>
         public static Action UiScaleChanged;
+        /// <summary>Показан новый узел диалога (для озвучки: Resources/Audio/Voice/&lt;диалог&gt;_&lt;узел&gt;).</summary>
+        public static Action<string, string> OnDialogueNode;
+        string _voicedNode;
         Texture2D _mapTex;
 
         public Screens(IGameShell g)
@@ -151,6 +154,8 @@ namespace Immortal.Presentation.UI
             string key = act.DialogueId + "|" + act.NodeId + "|" + opts.Count + "|" + string.Join(",", opts.Select(o => o.Enabled ? "1" : "0"));
             if (key == _dialogueKey) return;
             _dialogueKey = key;
+            string nodeKey = act.DialogueId + "|" + act.NodeId;
+            if (nodeKey != _voicedNode) { _voicedNode = nodeKey; OnDialogueNode?.Invoke(act.DialogueId, act.NodeId); }
             var box = _dialogueBox; box.Clear();
             box.style.width = 1040; box.style.marginBottom = 60;
             var b = box;

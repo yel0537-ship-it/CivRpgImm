@@ -123,6 +123,18 @@ namespace Immortal.Presentation
             src.Play();
         }
 
+        /// <summary>Сыграть только настоящий клип (без заглушек) — для озвучки реплик.</summary>
+        public bool PlayIfExists(string key, string folder = "Audio/Voice/", float volume = 1f)
+        {
+            var clips = Clips(folder + "|" + key, null, folder, key);
+            if (clips.Length == 0) return false;
+            var src = _pool[_next]; _next = (_next + 1) % _pool.Count;
+            src.clip = clips[0]; src.spatialBlend = 0; src.pitch = 1;
+            src.volume = volume * GameSettings.Sfx * GameSettings.Master;
+            src.Play();
+            return true;
+        }
+
         (SoundDef, AudioClip) Resolve(string key, int depth)
         {
             _file.sfx.TryGetValue(key, out var def);
@@ -138,15 +150,16 @@ namespace Immortal.Presentation
             return (def, null);
         }
 
-        AudioClip[] Clips(string key, SoundDef def, string folder)
+        AudioClip[] Clips(string key, SoundDef def, string folder, string fileKey = null)
         {
             if (_clipCache.TryGetValue(key, out var arr)) return arr;
+            fileKey ??= key;
             var list = new List<AudioClip>();
             if (def != null && def.clips != null)
                 foreach (var p in def.clips) { var c = Resources.Load<AudioClip>(p); if (c != null) list.Add(c); }
             if (list.Count == 0)
             {
-                string baseName = folder + key.Replace(':', '_');
+                string baseName = folder + fileKey.Replace(':', '_');
                 var c0 = Resources.Load<AudioClip>(baseName); if (c0 != null) list.Add(c0);
                 for (int i = 1; i <= 4; i++) { var ci = Resources.Load<AudioClip>(baseName + "_" + i); if (ci != null) list.Add(ci); }
             }

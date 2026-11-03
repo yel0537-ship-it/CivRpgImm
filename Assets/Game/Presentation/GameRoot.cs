@@ -74,6 +74,7 @@ namespace Immortal.Presentation
             BuildUi();
             _audio = AudioService.Create(transform);
             Ui.OnClickSound = () => _audio.Play("ui_click");
+            Screens.OnDialogueNode = (dlg, node) => _audio.PlayIfExists(dlg + "_" + node);
             CreateSun();
             SetScreen(UiScreen.Menu);
             ScreenshotRunner.TryStart(this);
@@ -263,7 +264,12 @@ namespace Immortal.Presentation
             {
                 float moved = Vector3.Distance(new Vector3(heroWorld.x, 0, heroWorld.z), new Vector3(_lastHeroWorld.x, 0, _lastHeroWorld.z));
                 if (moved < 3f) _stepDist += moved;
-                if (_stepDist > (st.Hero.Mounted ? 2.4f : 1.7f)) { _stepDist = 0; _audio.Play(st.Hero.Mounted ? "hoof" : "footstep", heroWorld, 0.5f); }
+                if (_stepDist > (st.Hero.Mounted ? 2.4f : 1.7f))
+                {
+                    _stepDist = 0;
+                    string terrain = Session.Map.TerrainAt(hero.Pos).id;
+                    _audio.Play((st.Hero.Mounted ? "hoof_" : "footstep_") + terrain, heroWorld, 0.5f, st.Hero.Mounted ? "hoof" : "footstep");
+                }
             }
             _lastHeroWorld = heroWorld;
 
@@ -393,14 +399,15 @@ namespace Immortal.Presentation
                         var hp = _units.UnitWorldPos(e.UnitId, 0.2f);
                         var tu = Session.FindUnit(e.UnitId);
                         bool ours = tu != null && tu.Team == Teams.Player;
-                        Sfx(ours ? "hit_hero" : "hit", e.Pos);
+                        Sfx(tu != null && tu.DefId != null ? "hit_" + tu.DefId : "hit", e.Pos, 1f, ours ? "hit_hero" : "hit");
                         if (tu != null && tu.Kind == UnitKind.Hero) _cam.Shake(Mathf.Clamp(e.Value / 40f, 0.1f, 0.6f));
                         else if (e.Crit) _cam.Shake(0.15f);
                         if (hp.HasValue && GameSettings.DamageNumbers) _hud.Floating(hp.Value, $"{e.Value:0}", e.Crit ? new Color(1f, 0.85f, 0.2f) : tu != null && tu.Team == Teams.Player ? new Color(1f, 0.35f, 0.3f) : Color.white, e.Crit ? 24 : 18);
                         break;
                     case GameEventType.Death:
                         _units.Burst("death", _world.Ground(e.Pos, 0.8f), 1f, new Color(0.9f, 0.9f, 0.9f));
-                        Sfx("death", e.Pos);
+                        var du = Session.FindUnit(e.UnitId);
+                        Sfx(du != null && du.DefId != null ? "death_" + du.DefId : "death", e.Pos, 1f, "death");
                         break;
                     case GameEventType.Pickup:
                         _hud.Floating(_world.Ground(e.Pos, 1.5f), e.Text, e.Id == "essence" ? Ui.Mystic : Ui.Good, 16);
@@ -447,12 +454,16 @@ namespace Immortal.Presentation
                     case GameEventType.ZoneEntered: _hud.Notice("Дым", 2f); _audio.Play("zone_enter"); break;
                     case GameEventType.Autosave: SaveSystem.Save(Session, "auto"); break;
                     case GameEventType.Rejuvenated: _audio.Play("essence"); _units.Burst("rejuvenate", _world.Ground(Session.HeroUnit.Pos, 1f), 2.5f, Ui.Mystic, 0.8f); break;
-                    case GameEventType.Strike: _units.OnStrike(e.UnitId, false); Sfx(e.Id == "ranged" ? "shoot" : "strike", e.Pos, 0.8f); break;
-                    case GameEventType.WindupStarted: Sfx("windup", e.Pos, 0.5f); break;
+                    case GameEventType.Strike:
+                        _units.OnStrike(e.UnitId, false);
+                        var su = Session.FindUnit(e.UnitId);
+                        Sfx("strike_" + su?.DefId, e.Pos, 0.8f, e.Id == "ranged" ? "shoot" : "strike");
+                        break;
+                    case GameEventType.WindupStarted: Sfx("windup_" + Session.FindUnit(e.UnitId)?.DefId, e.Pos, 0.5f, "windup"); break;
                     case GameEventType.Aggro:
                         var ap = _units.UnitWorldPos(e.UnitId, 0.5f);
                         if (ap.HasValue) _hud.Floating(ap.Value, "!", new Color(1f, 0.3f, 0.2f), 30);
-                        Sfx("aggro", e.Pos, 0.6f, "windup");
+                        Sfx("aggro_" + Session.FindUnit(e.UnitId)?.DefId, e.Pos, 0.6f, "aggro");
                         break;
                     case GameEventType.Recruited: _audio.Play("recruit"); break;
                     case GameEventType.BuildingBuilt: if (Session.HeroUnit != null && Vec2.Distance(e.Pos, Session.HeroUnit.Pos) < 60f) Sfx("build", e.Pos); break;

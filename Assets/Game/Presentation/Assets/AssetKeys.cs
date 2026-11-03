@@ -84,6 +84,11 @@ namespace Immortal.Presentation
                                       "footstep", "hoof", "build", "ui_click", "ui_open", "dialogue", "levelup", "objective", "recruit", "sad", "zone_enter", "era", "timejump" })
                 list.Add(new AssetSlot("sfx", k, "Resources/Audio/Sfx/" + k + " (+ варианты _1.._4)"));
             foreach (var a in db.AbilityList) list.Add(new AssetSlot("sfx", "ability_" + a.id, a.name + " (иначе swing/shoot/cast)"));
+            foreach (var e in db.EnemyList)
+                foreach (var k in new[] { "hit", "death", "strike", "windup", "aggro" })
+                    list.Add(new AssetSlot("sfx", k + "_" + e.id, $"{e.name}: {k} (иначе общий {k})"));
+            foreach (var t in db.TerrainFile.terrains) if (t.walkable) list.Add(new AssetSlot("sfx", "footstep_" + t.id, "шаги: " + t.name + " (иначе footstep)"));
+            foreach (var d in db.EventsFile.dialogues) foreach (var n in d.nodes) list.Add(new AssetSlot("voice", d.id + "_" + n.id, "озвучка реплики (только свой файл)"));
             foreach (var a in db.AbilityList) if (a.radius > 0) list.Add(new AssetSlot("sfx", "explosion_" + a.id, a.name + " — взрыв (иначе explosion)"));
             foreach (var m in new[] { "menu", "world", "combat", "smoke", "chronicle" }) list.Add(new AssetSlot("music", m, "Resources/Audio/Music/" + m));
             foreach (var r in db.Regions) list.Add(new AssetSlot("music", "region_" + r.id, "музыка региона " + r.name + " (иначе era_*, world)"));

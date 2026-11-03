@@ -140,6 +140,7 @@ namespace Immortal.Core.Civilization
             var bs = new BuildingState { DefId = id, Slot = slot, Pos = pos, BuiltMonths = s.State.Months };
             c.Buildings.Add(bs);
             if (id == "field") ConvertToFields(s, pos, 2);
+            if (d.convertTerrain != null) ConvertTerrain(s, pos, d.convertTerrain, c);
             s.Map.RebuildBuildingBlockers(s.Content, s.State);
             s.Emit(new GameEvent { Type = GameEventType.BuildingBuilt, Id = id, Pos = pos, Text = c.Id });
             if (d.megastructure)
@@ -161,6 +162,29 @@ namespace Immortal.Core.Civilization
                 var td = s.Map.TerrainAt(t);
                 if (td.fertile) s.Map.SetTerrain(t, "field");
             }
+        }
+
+        /// <summary>Мир меняется руками людей: осушенное болото, вырубленный лес.</summary>
+        public static int ConvertTerrain(GameSession s, Vec2 pos, TerrainConversion conv, CityState c)
+        {
+            if (!s.Content.Terrain.ContainsKey(conv.to)) return 0;
+            s.Map.TileXY(pos, out int cx, out int cy);
+            int n = 0, r = conv.radius;
+            for (int dy = -r; dy <= r; dy++)
+            for (int dx = -r; dx <= r; dx++)
+            {
+                if (dx * dx + dy * dy > r * r || !s.Map.InBounds(cx + dx, cy + dy)) continue;
+                int t = s.Map.TileIndex(cx + dx, cy + dy);
+                if (s.Map.TerrainAt(t).id != conv.from) continue;
+                s.Map.SetTerrain(t, conv.to);
+                n++;
+            }
+            if (n > 0)
+            {
+                s.Emit(new GameEvent { Type = GameEventType.WorldChanged, Pos = pos, Value = n });
+                Chronicle.AddText(s, $"Год {s.Year}. У {c.Name} изменилась земля: {s.Content.Terrain[conv.from].name.ToLower()} уступили место — {s.Content.Terrain[conv.to].name.ToLower()} ({n} участков).", "land");
+            }
+            return n;
         }
 
         public static CityTotals Totals(GameSession s, CityState c)

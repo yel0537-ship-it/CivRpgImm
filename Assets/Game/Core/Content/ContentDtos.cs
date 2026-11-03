@@ -270,7 +270,11 @@ namespace Immortal.Core.Content
         public float size = 2f, height = 2f;
         public int max = 99;
         public bool megastructure, interior;
+        /// <summary>Постройка меняет местность вокруг: {"from":"swamp","to":"grass","radius":7} (радиус в тайлах).</summary>
+        public TerrainConversion convertTerrain;
     }
+
+    public sealed class TerrainConversion { public string from, to; public int radius = 6; }
 
     // ---------- settlement_stages.json ----------
     public sealed class StagesFile { public List<StageDef> stages = new List<StageDef>(); }

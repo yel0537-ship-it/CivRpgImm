@@ -161,6 +161,49 @@
    "description": "Общий дом, площадь и сказители."
   },
   {
+   "id": "drainage",
+   "name": "Осушительные канавы",
+   "era": "city_states",
+   "tech": "irrigation",
+   "cost": {
+    "wood": 15,
+    "stone": 10
+   },
+   "food": 2,
+   "size": 2.4,
+   "height": 0.4,
+   "color": "#6D8B74",
+   "max": 2,
+   "specialization": "economy",
+   "convertTerrain": {
+    "from": "swamp",
+    "to": "grass",
+    "radius": 8
+   },
+   "description": "Осушает болота вокруг: топь становится лугом."
+  },
+  {
+   "id": "logging_camp",
+   "name": "Лесоповал",
+   "era": "primitive",
+   "tech": "stone_tools",
+   "cost": {
+    "wood": 10
+   },
+   "production": 2,
+   "size": 2.6,
+   "height": 1.2,
+   "color": "#8D6E4A",
+   "max": 1,
+   "specialization": "economy",
+   "convertTerrain": {
+    "from": "forest",
+    "to": "grass",
+    "radius": 5
+   },
+   "description": "Лес вокруг вырубается на брёвна: даёт производство, но деревьев станет меньше."
+  },
+  {
    "id": "house",
    "name": "Дом",
    "era": "city_states",

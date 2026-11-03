@@ -39,6 +39,11 @@ namespace Immortal.Core.Character
                     var army = s.Army(targetId);
                     if (army != null) army.GeneralId = c.Id;
                     break;
+                case CompanionRoles.Envoy:
+                    var en = s.Nation(targetId);
+                    if (en == null || en.IsPlayer) { c.Role = CompanionRoles.Camp; return false; }
+                    s.Message($"{c.Name} отправляется послом в {en.Name}.");
+                    break;
                 case CompanionRoles.Errand:
                     c.ErrandKind = targetId ?? "resources";
                     c.ErrandReturnMonths = s.State.Months + s.Balance.companions.errandMonths;
@@ -119,6 +124,18 @@ namespace Immortal.Core.Character
                 c.Relation = MathUtil.Clamp(c.Relation, -100, 100);
 
                 if (c.Role == CompanionRoles.Errand && s.State.Months >= c.ErrandReturnMonths) ReturnFromErrand(s, c);
+                if (c.Role == CompanionRoles.Envoy && s.State.PlayerNationId != null)
+                {
+                    // Посол при чужом дворе: отношение растёт, сведения копятся.
+                    var n = s.Nation(c.AssignmentId);
+                    if (n != null && !n.Destroyed)
+                    {
+                        var r = Civilization.Diplomacy.Rel(s, n.Id, s.State.PlayerNationId);
+                        r.Attitude = MathUtil.Clamp(r.Attitude + 0.2f + c.Speech * 0.01f, -100, 100);
+                        HeroSystem.AddMemory(s, "intel_" + n.DefId);
+                        if (r.War && s.Rng.Chance(0.05f)) { Die(s, c, "казнён как посол врага"); continue; }
+                    }
+                }
 
                 double age = c.AgeYears(s.State.Months);
                 if (!c.AskedForEssence && age >= c.LifespanYears - 1.5 && s.State.Hero.RejuvenationUnlocked && !s.InTimeJump)

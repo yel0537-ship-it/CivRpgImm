@@ -174,6 +174,43 @@ namespace Immortal.Tests
         }
 
         [Test]
+        public void DrainageTurnsSwampIntoMeadow()
+        {
+            var s = SettlementTests.WithCamp(57, 2);
+            var cap = s.Capital(s.PlayerNation);
+            // Подготовим болото вокруг города и нужную технологию.
+            s.Map.TileXY(cap.Pos, out int cx, out int cy);
+            for (int dy = -6; dy <= 6; dy++) for (int dx = -6; dx <= 6; dx++) s.Map.SetTerrain(s.Map.TileIndex(cx + dx, cy + dy), "swamp");
+            s.PlayerNation.EraId = "city_states";
+            TechSystem.Complete(s, s.PlayerNation, s.Content.Tech["irrigation"]);
+            s.PlayerNation.Add("wood", 50); s.PlayerNation.Add("stone", 50);
+            var conv = s.Content.Buildings["drainage"].convertTerrain;
+            int converted = CitySystem.ConvertTerrain(s, cap.Pos, conv, cap);
+            Assert.Greater(converted, 20);
+            Assert.AreEqual("grass", s.Map.TerrainAt(cap.Pos).id);
+        }
+
+        [Test]
+        public void PlayerCanBuildOutpostAndEnvoyWarmsRelations()
+        {
+            var s = SettlementTests.WithCamp(58, 2);
+            var pn = s.PlayerNation;
+            pn.Add("wood", 40); pn.Add("stone", 30);
+            var hero = s.HeroUnit;
+            hero.Pos = s.Map.NearestWalkable(s.Capital(pn).Pos + new Vec2(60, 0)); hero.PrevPos = hero.Pos;
+            s.Execute(new BuildOutpost());
+            Assert.AreEqual(pn, TerritorySystem.OwnerAt(s, hero.Pos), "аванпост расширил владения");
+            var rival = s.State.Nations.First(n => !n.IsPlayer);
+            var envoy = s.State.Companions[0];
+            float before = Diplomacy.Rel(s, rival.Id, pn.Id).Attitude;
+            float chanceBefore = Diplomacy.AcceptChance(s, rival, "trade", false);
+            s.Execute(new AssignCompanion(envoy.Id, CompanionRoles.Envoy, rival.Id));
+            for (int i = 0; i < 12; i++) CompanionSystem.StepMonth(s);
+            Assert.Greater(Diplomacy.Rel(s, rival.Id, pn.Id).Attitude, before);
+            Assert.Greater(Diplomacy.AcceptChance(s, rival, "trade", false), chanceBefore);
+        }
+
+        [Test]
         public void LeaderDeathStartsRegencyAndHeirClosesWindow()
         {
             var s = SettlementTests.WithCamp(54, 2);

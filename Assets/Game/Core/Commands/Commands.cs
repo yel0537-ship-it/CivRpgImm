@@ -396,6 +396,33 @@ namespace Immortal.Core.Commands
         }
     }
 
+    /// <summary>Поставить аванпост там, где стоит герой: расширяет владения (30 дерева, 20 камня).</summary>
+    public sealed class BuildOutpost : IGameCommand
+    {
+        public void Execute(GameSession s)
+        {
+            var pn = s.PlayerNation; var hero = s.HeroUnit;
+            if (pn == null || hero == null) return;
+            if (pn.Get("wood") < 30 || pn.Get("stone") < 20) { s.Message("Нужно 30 дерева и 20 камня в запасах."); return; }
+            var owner = TerritorySystem.OwnerAt(s, hero.Pos);
+            if (owner != null && owner != pn) { s.Message($"Это земли {owner.Name}."); return; }
+            foreach (var p in s.State.Pois)
+                if (Vec2.Distance(p.Pos, hero.Pos) < 25f && p.DefId == "outpost") { s.Message("Рядом уже есть аванпост."); return; }
+            var nc = s.NearestCity(hero.Pos);
+            if (nc != null && Vec2.Distance(nc.Pos, hero.Pos) < 30f) { s.Message("Слишком близко к городу."); return; }
+            pn.Add("wood", -30); pn.Add("stone", -20);
+            var pos = s.Map.NearestWalkable(hero.Pos + hero.Facing * 3f);
+            s.State.Pois.Add(new PoiState
+            {
+                Id = s.State.NewId("poi"), DefId = "outpost", Name = $"Аванпост {pn.Name}", Pos = pos, Radius = 5, Discovered = true, Visited = true,
+                Cleared = true, OwnerNationId = pn.Id, RegionId = s.Content.Regions[s.Map.RegionIndexAt(pos)].id
+            });
+            TerritorySystem.Recompute(s);
+            s.Message("Аванпост поставлен. Граница расширилась.");
+            Chronicle.Add(s, "outpost", new System.Collections.Generic.Dictionary<string, string> { ["poi"] = "новый аванпост" });
+        }
+    }
+
     public sealed class DepositAll : IGameCommand
     {
         public void Execute(GameSession s)

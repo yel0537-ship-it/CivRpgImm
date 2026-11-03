@@ -464,6 +464,11 @@ namespace Immortal.Presentation.UI
                     row.Add(Ui.Button("За ресурсами", () => Exec(new AssignCompanion(id, CompanionRoles.Errand, "resources"), re)));
                     row.Add(Ui.Button("Разведка", () => Exec(new AssignCompanion(id, CompanionRoles.Errand, "intel"), re)));
                     row.Add(Ui.Button("В дым за ресурсом", () => Exec(new AssignCompanion(id, CompanionRoles.Errand, "essence"), re)));
+                    foreach (var rival in s.State.Nations.Where(n => !n.IsPlayer && !n.Destroyed))
+                    {
+                        var nid = rival.Id;
+                        row.Add(Ui.Button($"Посол: {rival.Name}", () => Exec(new AssignCompanion(id, CompanionRoles.Envoy, nid), re), !(c.Role == CompanionRoles.Envoy && c.AssignmentId == nid)));
+                    }
                     box.Add(row);
                 }
                 b.Add(box);
@@ -514,6 +519,7 @@ namespace Immortal.Presentation.UI
                 row.Add(Ui.Button($"Собрать войско 20 в {city.Name} (40 еды, 4 чел.)", () => Exec(new RecruitArmy(city.Id, 20), re)));
                 row.Add(Ui.Button($"Собрать войско 50 (100 еды, 10 чел.)", () => Exec(new RecruitArmy(city.Id, 50), re)));
                 row.Add(Ui.Button("Отправить поселенцев (20 еды, 6 чел.)", () => Exec(new SendSettlers(city.Id), re)));
+                row.Add(Ui.Button("Поставить аванпост там, где вы стоите (30 дерева, 20 камня)", () => Exec(new BuildOutpost(), re)));
                 b.Add(row);
             }
             foreach (var a in s.State.Armies.Where(a => a.NationId == pn.Id && a.Kind == "army"))

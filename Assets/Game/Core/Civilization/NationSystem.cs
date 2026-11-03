@@ -275,6 +275,8 @@ namespace Immortal.Core.Civilization
                 c = 0.2f + (ratio - 1) * 0.3f + (personal ? 0.2f : 0) + r.Attitude / 200f;
             }
             if (target.Leader.Memories.Contains("hero_betrayed")) c -= 0.2f;
+            foreach (var comp in s.State.Companions)
+                if (comp.Alive && comp.Role == CompanionRoles.Envoy && comp.AssignmentId == target.Id) c += 0.1f + comp.Speech * 0.002f;
             if (target.Leader.Memories.Contains("hero_cleared_bandits")) c += 0.05f;
             return MathUtil.Clamp(c, 0.02f, 0.95f);
         }

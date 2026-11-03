@@ -88,6 +88,8 @@ namespace Immortal.Core.Content
                 Need(b.minStage == null || db.StageIndex.ContainsKey(b.minStage), $"building {b.id}: нет ступени {b.minStage}");
                 foreach (var k in b.cost.Keys) Need(Item(k), $"building {b.id}: нет ресурса {k}");
                 Need(b.tech == null || db.Tech.ContainsKey(b.tech), $"building {b.id}: нет технологии {b.tech}");
+                if (b.convertTerrain != null)
+                    Need(db.Terrain.ContainsKey(b.convertTerrain.from) && db.Terrain.ContainsKey(b.convertTerrain.to), $"building {b.id}: неверное преобразование местности");
             }
             foreach (var s in db.Stages)
             {

@@ -148,7 +148,7 @@ namespace Immortal.Presentation
                 go.transform.localScale *= ve.scale;
                 var a = go.GetComponentInChildren<Animator>();
                 if (a != null) { var br = go.AddComponent<AnimatorBridge>(); br.Init(a); anim = br; }
-                else { var pa = go.AddComponent<ProceduralAnimator>(); pa.Init(go.transform.GetChild(0), false); anim = pa; }
+                else { var pa = go.AddComponent<ProceduralAnimator>(); pa.Init(go.transform.childCount > 0 ? go.transform.GetChild(0) : go.transform, false); anim = pa; }
             }
             else
             {

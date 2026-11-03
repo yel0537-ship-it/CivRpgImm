@@ -69,4 +69,7 @@ UNITY_EDITOR=/path/to/Unity tools/screenshots.sh all
 ```
 Standalone-сборка и PNG-снимки сценариев в `tools/out/screenshots`.
 
-Что сделано и что проверено — в [docs/PROGRESS.md](docs/PROGRESS.md). Как добавлять контент — [docs/HOW_TO_EXTEND.md](docs/HOW_TO_EXTEND.md).
+Что сделано и что проверено — [docs/PROGRESS.md](docs/PROGRESS.md).
+Контент (NPC, события, враги, эпохи) — [docs/HOW_TO_EXTEND.md](docs/HOW_TO_EXTEND.md).
+Модели, анимации, текстуры, звук — [docs/ASSETS.md](docs/ASSETS.md) и окно **Immortal → Покрытие ассетов**.
+Устройство кода — [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).

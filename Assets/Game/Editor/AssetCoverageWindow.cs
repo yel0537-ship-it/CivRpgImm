@@ -33,8 +33,8 @@ namespace Immortal.EditorTools
             }
             foreach (var s in AssetKeys.Textures(db))
             {
-                string p = "Textures/Terrain/" + s.Id;
-                _rows.Add((s, Resources.Load<Texture2D>(p) != null, p + " (иначе процедурная)"));
+                string p = AssetKeys.TexturePath(s);
+                _rows.Add((s, Resources.Load<Texture2D>(p) != null, p + (s.Category == "terrain" ? " (иначе процедурная)" : "")));
             }
             foreach (var s in AssetKeys.Audio(db))
             {

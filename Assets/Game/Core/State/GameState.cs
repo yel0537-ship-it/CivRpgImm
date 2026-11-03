@@ -150,6 +150,9 @@ namespace Immortal.Core
         public float DeadTimer;
         public bool InSmoke;
         public bool Boss;
+        /// <summary>Особое умение врага (abilities.json) и его перезарядка.</summary>
+        public string Ability;
+        public float AbilityCd;
     }
 
     public sealed class Projectile

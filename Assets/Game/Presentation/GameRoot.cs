@@ -24,6 +24,8 @@ namespace Immortal.Presentation
         CameraRig _cam;
         WorldView _world;
         UnitViews _units;
+        Markers _markers;
+        Ambience _ambience;
         UIDocument _doc;
         Hud _hud;
         Screens _screens;
@@ -62,6 +64,8 @@ namespace Immortal.Presentation
             _cam = new CameraRig();
             _world = new WorldView(transform);
             _units = new UnitViews(transform, _world);
+            _markers = new Markers(transform, _world);
+            _ambience = new Ambience(transform, _world);
             CreateEventSystem();
             BuildUi();
             _audio = AudioService.Create(transform);
@@ -141,6 +145,8 @@ namespace Immortal.Presentation
             Session = s;
             _world.Bind(s);
             _units.Bind(s);
+            _markers.Bind(s);
+            _ambience.Bind(s);
             _acc = 0; _autosaveTimer = 0;
             var hero = s.HeroUnit;
             if (hero != null) _cam.Snap(_world.Ground(hero.Pos));
@@ -224,6 +230,8 @@ namespace Immortal.Presentation
             _cam.Update(heroWorld + Vector3.up * 1f, Current == UiScreen.World && !_screens.IsOverUi(_doc.rootVisualElement.panel, GameInput.MousePosition) ? GameInput.Scroll : 0f, dt);
             _world.Update(heroPos, dt);
             _units.Sync(alpha, dt);
+            _markers.Update(dt);
+            _ambience.Update(heroPos, heroWorld, dt);
             UpdateLabels(heroPos);
             _hud.Update(Session, _doc.rootVisualElement.panel, _cam.Cam, dt);
         }
@@ -305,11 +313,12 @@ namespace Immortal.Presentation
                 var h = _doc.rootVisualElement.panel;
                 var pp = h != null ? RuntimePanelUtils.ScreenToPanel(h, new Vector2(mouse.x, UnityEngine.Screen.height - mouse.y)) : Vector2.zero;
                 _hud.SetHover(pick.Label, pp);
+                _markers.Hover(pick.Command != null ? pick.Pos : (Vec2?)null, pick.Radius, HoverColor(pick.Kind));
                 if (GameInput.LeftDown)
                 {
                     var cmd = pick.Command;
                     if (cmd != null) { Session.Execute(cmd); _holdMove = false; }
-                    else { Session.Execute(new MoveTo(cursor)); _holdMove = true; _holdTimer = 0; }
+                    else { Session.Execute(new MoveTo(cursor)); _holdMove = true; _holdTimer = 0; _markers.Click(cursor); }
                 }
                 else if (GameInput.LeftHeld && _holdMove)
                 {
@@ -324,7 +333,7 @@ namespace Immortal.Presentation
                     Session.Execute(new Dash(dir));
                 }
             }
-            else _hud.SetHover(null, Vector2.zero);
+            else { _hud.SetHover(null, Vector2.zero); _markers.Hover(null, 0, Color.clear); }
             if (!GameInput.LeftHeld) _holdMove = false;
 
             if (GameInput.Down(GameInput.Key.R)) Session.Execute(new ToggleMount());
@@ -335,6 +344,12 @@ namespace Immortal.Presentation
             }
             ProcessEvents();
         }
+
+        static Color HoverColor(string kind) => kind switch
+        {
+            "enemy" => new Color(1f, 0.25f, 0.2f, 0.7f), "npc" => new Color(1f, 1f, 1f, 0.6f), "node" => new Color(0.5f, 1f, 0.5f, 0.6f),
+            "loot" => new Color(1f, 0.9f, 0.4f, 0.7f), _ => new Color(1f, 0.85f, 0.4f, 0.55f)
+        };
 
         bool CursorPoint(Vector2 mouse, Unit hero, out Vector3 point)
         {
@@ -404,7 +419,7 @@ namespace Immortal.Presentation
                     case GameEventType.StageChanged: _hud.Notice($"Поселение выросло: {e.Text}", 5f); _audio.Play("objective"); break;
                     case GameEventType.TimeJumped:
                         _audio.Play("timejump");
-                        _world.Bind(Session); _units.Bind(Session);
+                        _world.Bind(Session); _units.Bind(Session); _markers.Bind(Session); _ambience.Bind(Session);
                         if (Session.HeroUnit != null) _cam.Snap(_world.Ground(Session.HeroUnit.Pos));
                         break;
                     case GameEventType.HeroDefeated: _hud.Notice("Вы пали… и уснули на десятилетия.", 6f); _audio.Play("death"); _cam.Shake(0.8f); break;
@@ -476,6 +491,12 @@ namespace Immortal.Presentation
                     if (u.Kind != UnitKind.Npc && u.Kind != UnitKind.Leader) continue;
                     if (Vec2.Distance(u.Pos, hero) > 16f || u.InSmoke != Session.State.Hero.InSmoke) continue;
                     _hud.WorldLabel(panel, _cam.Cam, "u" + u.Id, _world.Ground(u.Pos, 2.8f), u.Name, u.Kind == UnitKind.Leader ? Ui.Gold : u.Team == Teams.Wild ? Ui.Bad : Ui.Text, 14);
+                }
+                var hs = Session.State.Hero;
+                if (hs.Pending != null && hs.Pending.Kind == "gather" && hs.GatherProgress > 0 && Session.HeroUnit != null)
+                {
+                    float k = Mathf.Clamp01(hs.GatherProgress / Session.Balance.hero.gatherTime);
+                    _hud.WorldLabel(panel, _cam.Cam, "gather", _world.Ground(Session.HeroUnit.Pos, 2.9f), "Сбор " + new string('▮', (int)(k * 10)) + new string('▯', 10 - (int)(k * 10)), Ui.Good, 14);
                 }
                 foreach (var p in Session.State.Pois)
                 {

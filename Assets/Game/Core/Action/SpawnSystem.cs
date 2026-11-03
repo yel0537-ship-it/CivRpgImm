@@ -25,7 +25,8 @@ namespace Immortal.Core.Action
                 Kind = kind, DefId = defId, Name = d.name, Team = team, Pos = s.Map.NearestWalkable(pos, 4), Home = pos,
                 Radius = d.radius * d.scale, Speed = d.speed, Hp = d.hp * hpMul, MaxHp = d.hp * hpMul, Damage = d.damage * (0.85f + danger * 0.15f),
                 Armor = d.armor, AttackRange = d.attackRange, AggroRange = d.aggroRange, Windup = d.windup, Recover = d.recover,
-                Behavior = d.behavior, PoiId = poiId, Ai = AiState.Idle, Boss = d.boss
+                Behavior = d.behavior, PoiId = poiId, Ai = AiState.Idle, Boss = d.boss,
+                Ability = d.ability, AbilityCd = d.abilityCooldown * 0.5f
             };
             return s.AddUnit(u);
         }
@@ -225,7 +226,7 @@ namespace Immortal.Core.Action
                     if (!comp.Alive || comp.UnitId != 0 || comp.Role == CompanionRoles.Party || comp.Role == CompanionRoles.Errand) continue;
                     string home = comp.Role == CompanionRoles.Governor || comp.Role == CompanionRoles.Rebel ? comp.AssignmentId : s.Capital(s.PlayerNation)?.Id;
                     if (home != c.Id) continue;
-                    var pos = c.Pos + Vec2.FromAngle(MathUtil.Hash01(comp.Id.GetHashCode(), 1, 3) * 6.28f) * 4f;
+                    var pos = c.Pos + Vec2.FromAngle(MathUtil.Hash01((int)(MathUtil.Fnv1a(comp.Id) & 0x7FFFFFFF), 1, 3) * 6.28f) * 4f;
                     var u = s.AddUnit(new Unit
                     {
                         Kind = UnitKind.Npc, CompanionId = comp.Id, Name = comp.Name, Team = comp.Role == CompanionRoles.Rebel ? Teams.Neutral : Teams.Player,

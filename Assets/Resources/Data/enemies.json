@@ -78,7 +78,9 @@
    "xp": 25,
    "color": "#424242",
    "lootTable": "wolf",
-   "boss": true
+   "boss": true,
+   "ability": "pounce",
+   "abilityCooldown": 7
   },
   {
    "id": "bear",
@@ -95,7 +97,9 @@
    "recover": 0.8,
    "xp": 30,
    "color": "#4E342E",
-   "lootTable": "bear"
+   "lootTable": "bear",
+   "ability": "boss_slam",
+   "abilityCooldown": 8
   },
   {
    "id": "marsh_lurker",
@@ -162,7 +166,9 @@
    "xp": 50,
    "color": "#5E1F16",
    "lootTable": "bandit_chief",
-   "boss": true
+   "boss": true,
+   "ability": "charge",
+   "abilityCooldown": 8
   },
   {
    "id": "raider",
@@ -218,7 +224,9 @@
    "recover": 0.6,
    "xp": 20,
    "color": "#212121",
-   "lootTable": "bandit"
+   "lootTable": "bandit",
+   "ability": "pounce",
+   "abilityCooldown": 6
   },
   {
    "id": "shade_beast",
@@ -253,7 +261,9 @@
    "xp": 15,
    "essence": 0.3,
    "color": "#B39DDB",
-   "lootTable": "spirit"
+   "lootTable": "spirit",
+   "ability": "smoke_bolt",
+   "abilityCooldown": 6
   },
   {
    "id": "ember_spirit",
@@ -269,7 +279,9 @@
    "xp": 26,
    "essence": 0.5,
    "color": "#E64A19",
-   "lootTable": "spirit"
+   "lootTable": "spirit",
+   "ability": "boss_slam",
+   "abilityCooldown": 9
   },
   {
    "id": "stone_idol",
@@ -288,7 +300,9 @@
    "xp": 40,
    "essence": 0.8,
    "color": "#78909C",
-   "lootTable": "spirit"
+   "lootTable": "spirit",
+   "ability": "stone_slam",
+   "abilityCooldown": 8
   }
  ]
 }

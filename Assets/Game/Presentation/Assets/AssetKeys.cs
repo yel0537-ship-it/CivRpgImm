@@ -56,9 +56,26 @@ namespace Immortal.Presentation
         public static List<AssetSlot> Textures(ContentDatabase db)
         {
             var list = new List<AssetSlot>();
-            foreach (var t in db.TerrainFile.terrains) list.Add(new AssetSlot("terrain", t.id, t.name + " → Resources/Textures/Terrain/" + t.id));
+            foreach (var t in db.TerrainFile.terrains) list.Add(new AssetSlot("terrain", t.id, t.name));
+            foreach (var k in new[] { "hero", "companion", "npc", "descendant", "leader", "narrator" }) list.Add(new AssetSlot("portrait", k, "портрет по умолчанию"));
+            foreach (var r in db.RecruitsFile.recruits) list.Add(new AssetSlot("portrait", r.id, "портрет " + r.name));
+            foreach (var n in db.NationDefs) if (!n.player) list.Add(new AssetSlot("portrait", "leader_" + n.id, "портрет " + n.leaderName));
+            foreach (var a in db.AbilityList) list.Add(new AssetSlot("icon_ability", a.id, a.name));
+            list.Add(new AssetSlot("icon_ability", "dash", "рывок"));
+            foreach (var i in db.ItemsFile.items) if (!i.resource) list.Add(new AssetSlot("icon_item", i.id, i.name));
+            foreach (var b in db.BuildingList) list.Add(new AssetSlot("icon_building", b.id, b.name));
             return list;
         }
+
+        public static string TexturePath(AssetSlot s) => s.Category switch
+        {
+            "terrain" => "Textures/Terrain/" + s.Id,
+            "portrait" => "Portraits/" + s.Id,
+            "icon_ability" => "Icons/Abilities/" + s.Id,
+            "icon_item" => "Icons/Items/" + s.Id,
+            "icon_building" => "Icons/Buildings/" + s.Id,
+            _ => "Textures/" + s.Id
+        };
 
         public static List<AssetSlot> Audio(ContentDatabase db)
         {

@@ -161,7 +161,7 @@ namespace Immortal.Tests
 
                 // 4. Правитель: наместник, приоритеты, поручения, прыжки во времени.
                 s.Execute(new SetTechPriority("society"));
-                for (int jump = 0; jump < 14 && s.State.EndingId == null; jump++)
+                for (int jump = 0; jump < 20 && s.State.EndingId == null; jump++)
                 {
                     var pn = s.PlayerNation;
                     if (cap.NationId != pn.Id) cap = s.Capital(pn);
@@ -183,8 +183,8 @@ namespace Immortal.Tests
                     bot.Note($"прыжок: эпоха {pn.EraId}, {CitySystem.Stage(s, cap).name}, нас. {cap.Population:0}, техн. {pn.Researched.Count}, ресурс {HeroSystem.EssenceAvailable(s)}, спутн. {s.State.Companions.Count(c => c.Alive)}");
 
                     // Потомки рядом со столицей — новые спутники.
-                    foreach (var d in s.State.Npcs.Where(n => n.IsDescendant && !n.Recruited && n.Alive && !n.Hostile).Take(3).ToList()) bot.Recruit(d, 2);
-                    if (s.Content.EraOrder(pn.EraId) >= 1) bot.HuntInSmoke(120);
+                    foreach (var d in s.State.Npcs.Where(n => n.IsDescendant && !n.Recruited && n.Alive && !n.Hostile).Take(5).ToList()) bot.Recruit(d, 2);
+                    if (s.Content.EraOrder(pn.EraId) >= 1) bot.HuntInSmoke(180);
                     bot.ToCapitalAndDeposit();
 
                     if (pn.Researched.Contains("essence_alchemy") && !cap.HasBuilding("laboratory")) s.Execute(new Build(cap.Id, "laboratory"));

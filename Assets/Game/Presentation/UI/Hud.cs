@@ -16,6 +16,8 @@ namespace Immortal.Presentation.UI
         VisualElement _hpFill, _energyFill, _vitFill;
         readonly Label[] _slotName = new Label[5], _slotCd = new Label[5];
         readonly VisualElement[] _slot = new VisualElement[5];
+        readonly Image[] _slotIcon = new Image[5];
+        readonly string[] _slotAbility = new string[5];
         readonly VisualElement _log;
         readonly List<(Label l, float t)> _messages = new List<(Label, float)>();
         float _noticeTimer;
@@ -95,7 +97,11 @@ namespace Immortal.Presentation.UI
                 var s = Ui.Box(new Color(0.08f, 0.08f, 0.1f, 0.85f), 6);
                 s.style.width = 130; s.style.height = 64; s.style.marginRight = 6;
                 s.pickingMode = PickingMode.Ignore;
-                s.Add(Ui.Label(keys[i], 13, Ui.Gold, true));
+                var head = Ui.Row(); head.pickingMode = PickingMode.Ignore; head.style.flexWrap = Wrap.NoWrap;
+                _slotIcon[i] = UiAssets.ImageOf(null, 26); Ui.Show(_slotIcon[i], false);
+                head.Add(_slotIcon[i]);
+                head.Add(Ui.Label(keys[i], 13, Ui.Gold, true));
+                s.Add(head);
                 _slotName[i] = Ui.Label("", 13); _slotCd[i] = Ui.Label("", 13, Ui.Dim);
                 s.Add(_slotName[i]); s.Add(_slotCd[i]);
                 _slot[i] = s;
@@ -249,6 +255,13 @@ namespace Immortal.Presentation.UI
                 string key = i == 4 ? "dash" : a?.id;
                 float cd = key != null && h.Cooldowns.TryGetValue(key, out var c) ? c : 0;
                 bool locked = i == 3 && (a == null || !h.InSmoke);
+                if (_slotAbility[i] != key)
+                {
+                    _slotAbility[i] = key;
+                    var tex = UiAssets.Icon("Abilities", key);
+                    _slotIcon[i].image = tex;
+                    Ui.Show(_slotIcon[i], tex != null);
+                }
                 _slotName[i].text = name;
                 _slotName[i].style.color = locked ? Ui.Dim : (i == 3 ? Ui.Mystic : Ui.Text);
                 _slotCd[i].text = cd > 0 ? $"{cd:0.0} с" : locked ? (a == null ? "нет в эту эпоху" : "только в дыму") : a != null ? $"{a.energy:0} эн." : "";

@@ -182,6 +182,26 @@ namespace Immortal.Tests
         }
 
         [Test]
+        public void BossSlamIsTelegraphedAndCanBeDodged()
+        {
+            var s = Arena(null, "bear");
+            var hero = s.HeroUnit;
+            s.State.Hero.Body = 40; HeroSystem.RefreshUnitStats(s); hero.Hp = hero.MaxHp;
+            var bear = s.State.Units.First(u => u.DefId == "bear");
+            bear.Pos = hero.Pos + new Vec2(1.5f, 0); bear.AbilityCd = 0;
+            Assert.IsTrue(TestUtil.TickUntil(s, () => s.State.Areas.Count > 0, 60), "медведь должен ударить по области");
+            var area = s.State.Areas[0];
+            Assert.Greater(area.Delay, 0.5f, "у удара по области есть видимая задержка");
+            // Уходим из зоны, пока она «заряжается».
+            var away = (hero.Pos - area.Pos).Normalized;
+            hero.Pos = s.Map.NearestWalkable(area.Pos + away * (area.Radius + 3f)); hero.PrevPos = hero.Pos;
+            bear.Pos = s.Map.NearestWalkable(hero.Pos + away * 12f); bear.Ai = AiState.Recover; bear.StateTimer = 2f;
+            float hp = hero.Hp;
+            TestUtil.Ticks(s, TestUtil.Seconds(s, 1.2f));
+            Assert.GreaterOrEqual(hero.Hp, hp - 0.01f, "увернувшийся герой не получает урона");
+        }
+
+        [Test]
         public void EraPowerWorksOnlyInSmoke()
         {
             var s = TestUtil.NewGame(21);

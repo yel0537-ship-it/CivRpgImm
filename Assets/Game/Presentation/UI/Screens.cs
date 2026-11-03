@@ -140,8 +140,18 @@ namespace Immortal.Presentation.UI
             string key = act.DialogueId + "|" + act.NodeId + "|" + opts.Count + "|" + string.Join(",", opts.Select(o => o.Enabled ? "1" : "0"));
             if (key == _dialogueKey) return;
             _dialogueKey = key;
-            var b = _dialogueBox; b.Clear();
-            b.style.width = 980; b.style.marginBottom = 60;
+            var box = _dialogueBox; box.Clear();
+            box.style.width = 1040; box.style.marginBottom = 60;
+            var b = box;
+            var portrait = UiAssets.DialoguePortrait(s);
+            if (portrait != null)
+            {
+                var row = Ui.Row(); row.style.alignItems = Align.FlexStart; row.style.flexWrap = Wrap.NoWrap;
+                row.Add(UiAssets.ImageOf(portrait, 170));
+                var col = new VisualElement(); col.style.flexGrow = 1; col.style.flexShrink = 1;
+                row.Add(col); box.Add(row);
+                b = col;
+            }
             string speaker = DialogueEngine.Speaker(s);
             if (!string.IsNullOrEmpty(speaker)) b.Add(Ui.Label(speaker, 20, Ui.Gold, true));
             b.Add(Ui.Label(DialogueEngine.Text(s), 18));
@@ -372,6 +382,8 @@ namespace Immortal.Presentation.UI
                 bool can = CitySystem.CanBuild(s, c, d.id, out var why);
                 bool unlocked = CitySystem.Unlocked(s, pn, d);
                 var row = Ui.Row();
+                var bicon = UiAssets.Icon("Buildings", d.id);
+                if (bicon != null) row.Add(UiAssets.ImageOf(bicon, 36));
                 string cost = string.Join(", ", d.cost.Select(kv => $"{kv.Value} {s.Content.ItemName(kv.Key)}"));
                 var lbl = Ui.Label($"{d.name} ({cost}){(d.megastructure ? " — МЕГАСООРУЖЕНИЕ" : "")}", 15, unlocked ? (can ? Ui.Text : Ui.Dim) : new Color(0.4f, 0.4f, 0.4f));
                 lbl.style.width = 520;
@@ -560,6 +572,8 @@ namespace Immortal.Presentation.UI
                 var def = s.Content.Items[it.DefId];
                 string aff = it.Affixes.Count > 0 ? " · " + string.Join(", ", it.Affixes.Select(kv => $"{kv.Key} +{kv.Value:0.##}")) : "";
                 var row = Ui.Row();
+                var icon = UiAssets.Icon("Items", it.DefId);
+                if (icon != null) row.Add(UiAssets.ImageOf(icon, 32));
                 var l = Ui.Label($"{LootSystem.ItemLabel(s, it)} — {(def.damage > 0 ? $"урон {def.damage * HeroSystem.QualityMult(s, it):0.0}" : def.armor > 0 ? $"броня {def.armor * HeroSystem.QualityMult(s, it):0.0}" : "оберег")}{aff}", 15, eq ? Ui.Gold : Ui.Text);
                 l.style.width = 700; row.Add(l);
                 var id = it.Id;

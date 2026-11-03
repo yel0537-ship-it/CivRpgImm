@@ -77,7 +77,10 @@ namespace Immortal.Core.Content
             }
 
             foreach (var e in db.EnemyList)
+            {
                 Need(e.lootTable == null || db.LootTables.ContainsKey(e.lootTable), $"enemy {e.id}: нет таблицы {e.lootTable}");
+                Need(e.ability == null || db.Abilities.ContainsKey(e.ability), $"enemy {e.id}: нет умения {e.ability}");
+            }
 
             foreach (var b in db.BuildingList)
             {

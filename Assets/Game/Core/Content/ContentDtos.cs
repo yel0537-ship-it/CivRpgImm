@@ -241,6 +241,8 @@ namespace Immortal.Core.Content
         public string id, name, kind = "enemy", behavior = "melee", color, lootTable, projectile;
         public float hp = 30, damage = 6, armor, speed = 4f, radius = 0.5f, attackRange = 1.5f, aggroRange = 10f;
         public float windup = 0.6f, recover = 0.7f, scale = 1f;
+        public string ability;
+        public float abilityCooldown = 7f;
         public int xp = 10;
         public float essence;
         public bool boss;

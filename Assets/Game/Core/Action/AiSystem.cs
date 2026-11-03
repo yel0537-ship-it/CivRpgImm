@@ -106,6 +106,24 @@ namespace Immortal.Core.Action
             }
 
             u.Ai = AiState.Chase;
+            // Особое умение: удар по области с видимой зоной, рывок или снаряд.
+            if (u.Ability != null)
+            {
+                u.AbilityCd -= dt;
+                if (u.AbilityCd <= 0 && s.Content.Abilities.TryGetValue(u.Ability, out var ab))
+                {
+                    float reach = ab.type == "area" ? Math.Max(ab.range, ab.radius) : ab.range;
+                    if (dist <= reach + target.Radius)
+                    {
+                        u.AbilityCd = s.Content.Enemies.TryGetValue(u.DefId ?? "", out var ed) ? ed.abilityCooldown : 7f;
+                        u.Facing = (target.Pos - u.Pos).Normalized;
+                        CombatSystem.UseAbility(s, u, ab, target.Pos);
+                        u.Ai = AiState.Recover; u.StateTimer = Math.Max(u.Recover, ab.windup);
+                        u.Vel = Vec2.Zero;
+                        return;
+                    }
+                }
+            }
             bool leash = u.Kind != UnitKind.Companion && Vec2.Distance(u.Pos, u.Home) > chaseLimit;
             if (leash || dist > u.AggroRange * 2.5f)
             {
